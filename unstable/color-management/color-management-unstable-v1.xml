@@ -1,0 +1,300 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<protocol name="color_management_unstable_v1">
+
+  <copyright>
+	Copyright © 2019 Sebastian Wick
+	Copyright © 2019 Erwin Burema
+
+	Permission is hereby granted, free of charge, to any person obtaining a
+	copy of this software and associated documentation files (the "Software"),
+	to deal in the Software without restriction, including without limitation
+	the rights to use, copy, modify, merge, publish, distribute, sublicense,
+	and/or sell copies of the Software, and to permit persons to whom the
+	Software is furnished to do so, subject to the following conditions:
+
+	The above copyright notice and this permission notice (including the next
+	paragraph) shall be included in all copies or substantial portions of the
+	Software.
+
+	THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+	IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+	FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
+	THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+	LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+	FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+	DEALINGS IN THE SOFTWARE.
+  </copyright>
+
+  <description summary="color management protocol">
+	This protocol specifies a way for a client to set the color space and
+	HDR metadata of a surface and to get information about the color spaces
+	and HDR capabilities of outputs.
+  </description>
+
+  <interface name="zwp_color_manager_v1" version="1">
+    <description summary="color manager">
+	A global interface used for getting color management surface and color
+	management output objects as well as creating color spaces from ICC
+	profiles.
+    </description>
+
+    <enum name="error">
+      <description summary="fatal color manager errors">
+	These fatal protocol errors may be emitted in response to illegal color
+	management requests.
+      </description>
+      <entry name="invalid_icc_profile" value="0" summary="invalid ICC profile"/>
+      <entry name="already_exists" value="1" summary="color managed surface/output already exists"/>
+    </enum>
+
+    <enum name="color_space_name">
+      <description summary="well-known color space name">
+	Names that describe a complete (primaries, white point and EOTF),
+	well-known color space.
+      </description>
+      <entry name="none" value="0" summary="the color space doesn't have a well-known name"/>
+      <!-- TODO add regularily used color spaces -->
+    </enum>
+
+    <request name="create_color_space">
+      <description summary="create a color space object">
+	Create a color space object from an ICC profile.
+
+	<!-- FIXME what exactly are the restrictions on the fd? In weston I only
+	     check for O_NONBLOCK then continue to read from it and post a wl
+	     error any read error.
+	     Should we accept files of every size? If the compositor should
+	     chose a size limit we might have to make color space creation a two
+	     step process -->
+	The description of the color space to create is send in the form of an
+	ICC profile as a file descriptor in the argument icc. The fd must be
+	compatible with O_NONBLOCK and the compositor will not modify it.
+
+	The ICC profile version must be 2 or 4, it must be a 3 channel profile
+	and the class must be 'input', 'output', 'abstract' or 'display'.
+
+	If the conditions are not met a protocol error 'invalid_icc_profile' is
+	raised by the compositor.
+
+	If the color space described by the ICC profile has its well-known name
+	listed in color_space_name, that name can be set in the 'name' argument.
+	Otherwise 'name' must be set to 'none'.
+
+	See the zwp_color_space_v1 interface for more details about the created
+	object.
+
+	See the ICC specification for more details about ICC profiles.
+      </description>
+      <arg name="id" type="new_id" interface="zwp_color_space_v1"/>
+      <arg name="icc" type="fd"/>
+      <arg name="name" type="uint" enum="color_space_name"/>
+    </request>
+
+    <request name="get_color_management_output">
+      <description summary="create a color management output from a wl_output">
+	This creates a new color zwp_color_management_output_v1 object for the
+	given wl_output. If get_color_management_output is called with a
+	wl_output that already has an active zwp_color_management_output_v1
+	associated with it an error is raised.
+
+
+	See the zwp_color_management_output_v1 interface for more details.
+      </description>
+      <arg name="id" type="new_id" interface="zwp_color_management_output_v1"/>
+      <arg name="output" type="object" interface="wl_output"/>
+    </request>
+
+    <request name="get_color_management_surface">
+      <description summary="create a color management surface from a wl_surface">
+	This creates a new color zwp_color_management_surface_v1 object for the
+	given wl_surface. If get_color_management_surface is called with a
+	wl_surface that already has an active zwp_color_management_surface_v1
+	associated with it an error is raised.
+
+	See the zwp_color_management_surface_v1 interface for more details.
+      </description>
+      <arg name="id" type="new_id" interface="zwp_color_management_surface_v1"/>
+      <arg name="surface" type="object" interface="wl_surface"/>
+    </request>
+
+    <request name="destroy" type="destructor">
+      <description summary="destroy the color manager">
+	Destroy the zwp_color_manager_v1 object. This does not affect any other
+	objects in any way.
+      </description>
+    </request>
+  </interface>
+
+  <interface name="zwp_color_management_output_v1" version="1">
+    <description summary="output color properties">
+	A zwp_color_management_output_v1 describes the color properties of an
+	output.
+
+	If the wl_output associated with the zwp_color_management_output_v1 is
+	destroyed, the zwp_color_management_output_v1 object becomes inert.
+    </description>
+
+    <event name="color_space_changed">
+      <description summary="color space changed">
+	The color_space_changed event is sent after creating a
+	zwp_color_management_output_v1 (see
+	zwp_color_manager_v1.get_color_management_output) and whenever the color
+	space of the output changed.
+      </description>
+    </event>
+
+    <request name="get_color_space">
+      <description summary="get the color space of the output">
+	This creates a new zwp_color_space_v1 object for the current color space
+	of the output. There always is exactly one color space active so the
+	client should destroy the color space created by earlier invocations of
+	this request. This is usually called as a reaction to the
+	color_space_changed_v1 event.
+
+	See the zwp_color_space_v1 interface for more details.
+      </description>
+      <arg name="id" type="new_id" interface="zwp_color_space_v1"/>
+    </request>
+
+    <!-- TODO: HDR capabilities event -->
+
+    <request name="destroy" type="destructor">
+      <description summary="destroy the color management output">
+	Destroy the color zwp_color_management_output_v1 object.
+      </description>
+    </request>
+  </interface>
+
+  <interface name="zwp_color_management_surface_v1" version="1">
+    <description summary="set color management information of a surface">
+	A zwp_color_management_surface_v1 allows the client to set the color
+	space and HDR properties of a surface.
+
+	If the wl_surface associated with the zwp_color_management_surface_v1 is
+	destroyed, the zwp_color_management_surface_v1 object becomes inert.
+    </description>
+
+    <enum name="render_intent">
+      <description summary="render intent">
+	Rendering intent allow the client to hint at how to perform color space
+	transformations.
+
+	See the ICC specification for more details about rendering intent.
+      </description>
+      <entry name="perceptual" value="0" summary="perceptual"/>
+      <entry name="relative" value="1" summary="media-relative colorimetric"/>
+      <entry name="saturation" value="2" summary="saturation"/>
+      <entry name="absolute" value="3" summary="ICC-absolute colorimetric"/>
+      <entry name="relative_bpc" value="4" summary="media-relative colorimetric + black point compensation"/>
+    </enum>
+
+    <request name="set_color_space">
+      <description summary="set the color space">
+	Set the color space of the underlying surface. The color space is double
+	buffered, and will be applied at the time wl_surface.commit of the
+	corresponding wl_surface is called.
+
+	The render intent gives the compositor a hint what to optimize for in
+	color space transformations.
+
+	<!-- FIXME figure out if we actually want un-premultiplied.
+	     KMS plane blending, GL/VK ROPs, custom blend shaders -->
+	The corresponding buffer is expected to contain un-premultiplied pixels
+	when a color space is set with this request.
+
+	If a surface has no color space set, sRGB and an arbitrary render intent
+	will be assumed.
+
+	When 'color_space' is set to null and the state gets committed by
+	wl_surface.commit the surface does not have a color space set.
+
+	If the color space of the surface matches the color space of an output
+	it is shown on the performance and color accuracy might improve. To find
+	those color spaces the client can listen to the preferred_color_space or
+	the wl_surface.enter/leave events.
+      </description>
+      <arg name="color_space" type="object" interface="zwp_color_space_v1" allow-null="true"/>
+      <arg name="render_intent" type="uint" enum="render_intent"/>
+    </request>
+
+    <!-- TODO: HDR metadata request -->
+
+    <event name="preferred_color_space">
+      <description summary="preferred color space">
+	The preferred_color_space event is sent after creating an
+	zwp_color_management_surface_v1 (see
+	zwp_color_manager_v1.get_color_management_surface) and whenever the
+	preferred color space changed.
+
+	The event does not carry a zwp_color_space_v1 but a wl_output object.
+	The concrete zwp_color_space_v1 can be created by calling
+	zwp_color_management_output_v1.get_color_space on the output and
+	listening to the zwp_color_management_output_v1.color_space_changed
+	event.
+
+	This is only a hint and clients can set any valid color space with
+	set_color_space but there might be performance and color accuracy
+	improvements by providing the surface in the preferred color space.
+      </description>
+      <arg name="output" type="object" interface="wl_output"/>
+    </event>
+
+    <request name="destroy" type="destructor">
+      <description summary="destroy the color management surface">
+	Destroy the zwp_color_management_surface_v1 object.
+
+	The surface does not have a color space set after destroying this
+	object.
+      </description>
+    </request>
+  </interface>
+
+  <interface name="zwp_color_space_v1" version="1">
+    <description summary="color space">
+	Describes a color space which can be attached to a surface
+	(zwp_color_management_surface_v1.set_color_space) and provides
+	information like the ICC profile and the well-known name to alow clients
+	to do color space transformations.
+
+	The client can create a zwp_color_space_v1 object from an ICC profile by
+	calling zwp_color_manager_v1.create_color_space or from an output by
+	calling zwp_color_management_output_v1.get_color_space.
+    </description>
+
+    <request name="get_information">
+      <description summary="get information about the color space">
+	The compositor will send the information event when receiving this
+	request.
+      </description>
+    </request>
+
+    <event name="information">
+      <description summary="color space information">
+	Information describing the color space is send as a response to
+	zwp_color_space_v1.get_information.
+
+	The icc argument provides a file descriptor to the client which can be
+	memory-mapped to provide the ICC profile describing the color space.
+	The fd must be mapped with MAP_PRIVATE by the client. Note, that the
+	fd may not be the same as the fd passed to
+	zwp_color_manager_v1.create_color_space.
+
+	The name argument contains the well-known name of the color space. If
+	the color space does not have a well-known name the name will be set
+	to 'none'. The name can be 'none' for any other reason even if this
+	color space represents one of the well-known color spaces listed in
+	zwp_color_manager_v1.color_space_name.
+      </description>
+      <arg name="icc" type="fd" summary="ICC profile file descriptor"/>
+      <arg name="size" type="uint" summary="ICC profile size, in bytes"/>
+      <arg name="name" type="uint" enum="zwp_color_manager_v1.color_space_name" summary="well-known name"/>
+    </event>
+
+    <request name="destroy" type="destructor">
+      <description summary="destroy the color space">
+	Destroy the zwp_color_space_v1 object.
+      </description>
+    </request>
+  </interface>
+
+</protocol>
