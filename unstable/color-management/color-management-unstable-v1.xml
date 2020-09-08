@@ -62,24 +62,28 @@
       <!-- TODO add regularily used whitepoints -->
     </enum>
 
+    <enum name="error">
+      <entry name="icc_fd" value="0" summary="given ICC fd has bad properties"/>
+    </enum>
+
     <request name="create_color_space_from_icc">
       <description summary="create a color space object from ICC profiles">
 	Create a color space object from an ICC profile. This request returns
 	a zwp_color_space_creator_v1 object which either returns an error
 	or the successfully created zwp_color_space_v1 object.
 
-	<!-- FIXME what exactly are the restrictions on the fd? In weston I only
-	     check for O_NONBLOCK then continue to read from it and post a wl
-	     error any read error.
-	     Should we accept files of every size? If the compositor should
-	     chose a size limit we might have to make color space creation a two
-	     step process -->
 	The description of the color space to create is send in the form of an
-	ICC profile as a file descriptor in the argument icc. The fd must be
-	compatible with O_NONBLOCK and the compositor will not modify it.
+	ICC profile as a file descriptor in the argument icc.
 
+	The fd must be seekable, the compositor will not modify the underlying
+	data and the maximum size of the ICC profile is 4 MB.
+	Violating these requirements will raise an icc_fd protocol error.
+
+	The backing memory of the fd must represent a valid ICC profile.
 	The ICC profile version must be 2 or 4, it must be a 3 channel profile
 	and the class must be 'input', 'output', 'abstract' or 'display'.
+	Violating these requirements will not result in a protocol error but
+	raise the zwp_color_space_creator_v1.error event.
 
 	See the zwp_color_space_v1 and zwp_color_space_creator_v1 interface for
 	more details about the created object.
