@@ -229,20 +229,26 @@
       <entry name="relative_bpc" value="4" summary="media-relative colorimetric + black point compensation"/>
     </enum>
 
+    <enum name="alpha_mode">
+      <description summary="alpha mode">
+	Specifies if alpha is premultiplied or not
+      </description>
+      <entry name="straight" value="0"/>
+      <entry name="premultiplied" value="1"/>
+    </enum>
+
     <request name="set_color_space">
       <description summary="set the color space">
-	Set the color space of the underlying surface. The color space is double
-	buffered, and will be applied at the time wl_surface.commit of the
-	corresponding wl_surface is called.
+	Set the color space of the underlying surface. The color space,
+	render intent and alpha mode are double buffered, and will be applied
+	at the time wl_surface.commit of the corresponding wl_surface is called.
 
 	<!-- FIXME: same problem as in the render_intent enum -->
 	The render intent gives the compositor a hint what to optimize for in
 	color space transformations.
 
-	<!-- FIXME figure out if we actually want un-premultiplied.
-	     KMS plane blending, GL/VK ROPs, custom blend shaders -->
-	The corresponding buffer is expected to contain un-premultiplied pixels
-	when a color space is set with this request.
+	The alpha channel is always linear. If the alpha mode is set to
+	premultiplied all color channels have been premultiplied by the alpha.
 
 	If a surface has no color space set, sRGB and an arbitrary render intent
 	will be assumed.
@@ -256,7 +262,8 @@
 	the wl_surface.enter/leave events.
       </description>
       <arg name="color_space" type="object" interface="zwp_color_space_v1" allow-null="true"/>
-      <arg name="render_intent" type="uint" enum="render_intent"/>
+      <arg name="render_intent" type="uint" enum="render_intent" summary="render intent"/>
+      <arg name="alpha_mode" type="uint" enum="alpha_mode" summary="alpha mode"/>
     </request>
 
     <!-- TODO: HDR metadata request -->
@@ -290,7 +297,8 @@
 
 	When the last zwp_color_management_surface_v1 object for a wl_surface
 	is destroyed, the destruction will pend unsetting the wl_surface's
-	color space, similar to set_color_space will pend a set.
+	color space, render intent and alpha mode similar to set_color_space
+	will pend a set.
       </description>
     </request>
   </interface>
