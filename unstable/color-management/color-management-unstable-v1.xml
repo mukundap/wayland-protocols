@@ -4,6 +4,7 @@
   <copyright>
 	Copyright © 2019 Sebastian Wick
 	Copyright © 2019 Erwin Burema
+	Copyright © 2020 AMD
 
 	Permission is hereby granted, free of charge, to any person obtaining a
 	copy of this software and associated documentation files (the "Software"),
@@ -183,6 +184,22 @@
       </description>
     </event>
 
+    <event name="extended_dynamic_range">
+      <description summary="extended dynamic range">
+	The event is sent after creating a zwp_color_management_output_v1
+	object and whenever the value changes.
+
+	The extended dynamic range value describes how much dynamic range is
+	available relative to the reference white. A value of 1.0 means that
+	the the display can not display anything brighter than reference white.
+	A value of 3.0 means that the reference white is at one third of the
+	highest luminance the display can produce, for example EDR equals to 3.0
+	may be 240 nits or EDR 1.0 (SDR) may be 80 nits.
+	The value in the event is the EDR value multiplied by 1000.
+      </description>
+      <arg name="value" type="uint" summary="EDR value * 1000"/>
+    </event>
+
     <request name="get_color_space">
       <description summary="get the color space of the output">
 	This creates a new zwp_color_space_v1 object for the current color space
@@ -236,6 +253,34 @@
       <entry name="straight" value="0"/>
       <entry name="premultiplied" value="1"/>
     </enum>
+
+    <request name="set_extended_dynamic_range">
+      <description summary="set the extended dynamic range">
+	Set the extended dynamic range (EDR) value of the underlying surface.
+	The EDR value is double buffered, and will be applied at the time
+	wl_surface.commit of the corresponding wl_surface is called.
+
+	The EDR value describes how much dynamic range is available relative to
+	the reference white.
+	A value of 1.0 means that the reference white is at the highest
+	luminance of the image produced by the maximum code value.
+	A value of 3.0 means that the reference white is at one third of the
+	highest luminance of the image produced by the maxium code value.
+
+	The color space attached to the surface can make the code values in the
+	buffer non-linear in regards to the luminance. The code value to produce
+	a third of the luminance of the biggest code value therefor might not
+	be one third of the biggest code value.
+
+	By default the EDR value is 1.0. The compositor will tone map the image
+	to match the EDRs of the output the surface is shown on.
+	EDR value is directly proportional to luminance.
+	There might be performance benefits by providing the image tone mapped
+	to the correct EDR value of an output it is shown on.
+	The EDR value is multiplied by 1000.
+      </description>
+     <arg name="value" type="uint" summary="EDR value * 1000"/>
+    </request>
 
     <request name="set_color_space">
       <description summary="set the color space">
