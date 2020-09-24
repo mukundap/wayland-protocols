@@ -2,9 +2,10 @@
 <protocol name="color_management_unstable_v1">
 
   <copyright>
-	Copyright © 2019 Sebastian Wick
-	Copyright © 2019 Erwin Burema
-	Copyright © 2020 AMD
+	Copyright 2019 Sebastian Wick
+	Copyright 2019 Erwin Burema
+	Copyright 2020 AMD
+	Copyright 2020 Collabora, Ltd.
 
 	Permission is hereby granted, free of charge, to any person obtaining a
 	copy of this software and associated documentation files (the "Software"),
@@ -33,15 +34,18 @@
   </description>
 
   <interface name="zwp_color_manager_v1" version="1">
-    <description summary="color manager">
+    <description summary="color manager singleton">
 	A global interface used for getting color management surface and color
-	management output objects as well as creating color spaces from ICC
-	profiles.
+	management output objects as well as creating color space objects from
+	ICC profiles, parameters, or enumerated names.
     </description>
 
     <enum name="eotf_names">
       <description summary="well-known EOTF names">
-	Names that describe a well-known EOTF
+	Names that describe a well-known EOTF.
+
+	A compositor must support all of these based on the protocol interface
+	version.
       </description>
       <entry name="unknown" value="0" summary="unknown EOTF"/>
       <!-- TODO add regularily used EOTFs -->
@@ -49,7 +53,10 @@
 
     <enum name="chromaticity_names">
       <description summary="well-known chromaticity names">
-	Names that describe well-known chromaticities
+	Names that describe well-known chromaticities.
+
+	A compositor must support all of these based on the protocol interface
+	version.
       </description>
       <entry name="unknown" value="0" summary="unknown chromaticity"/>
       <!-- TODO add regularily used chromaticities -->
@@ -57,7 +64,10 @@
 
     <enum name="whitepoint_names">
       <description summary="well-known whitepoint names">
-	Names that describe well-known whitepoints
+	Names that describe well-known whitepoints.
+
+	A compositor must support all of these based on the protocol interface
+	version.
       </description>
       <entry name="unknown" value="0" summary="unknown whitepoint"/>
       <!-- TODO add regularily used whitepoints -->
@@ -65,6 +75,9 @@
 
     <enum name="error">
       <entry name="icc_fd" value="0" summary="given ICC fd has bad properties"/>
+      <entry name="bad_enum" value="1" summary="bad value given as a well-known name"/>
+      <entry name="bad_param" value="2" summary="bad parameter value"/>
+      <entry name="iface_exists" value="3" summary="wl_surface has an existing color management interface"/>
     </enum>
 
     <request name="create_color_space_from_icc">
@@ -73,14 +86,15 @@
 	a zwp_color_space_creator_v1 object which either returns an error
 	or the successfully created zwp_color_space_v1 object.
 
-	The description of the color space to create is send in the form of an
+	The description of the color space to create is sent in the form of an
 	ICC profile as a file descriptor in the argument icc.
 
-	The fd must be seekable, the compositor will not modify the underlying
-	data and the maximum size of the ICC profile is 4 MB.
-	Violating these requirements will raise an icc_fd protocol error.
+	The fd must be seekable and the maximum size of the ICC profile is 4 MB.
+	Violating these requirements will raise an icc_fd protocol error. A
+	compositor must not modify the contents of the file, and the fd may be
+	sealed for writes and size changes.
 
-	The backing memory of the fd must represent a valid ICC profile.
+	The file contents must represent a valid ICC profile.
 	The ICC profile version must be 2 or 4, it must be a 3 channel profile
 	and the class must be 'input', 'output', 'abstract' or 'display'.
 	Violating these requirements will not result in a protocol error but
@@ -89,7 +103,8 @@
 	See the zwp_color_space_v1 and zwp_color_space_creator_v1 interface for
 	more details about the created object.
 
-	See the ICC specification for more details about ICC profiles.
+	See the specification from International Color Consortium for more
+	details about ICC profiles, also known as ISO 15076-1:2010.
       </description>
       <arg name="id" type="new_id" interface="zwp_color_space_creator_v1"/>
       <arg name="icc" type="fd"/>
@@ -101,7 +116,9 @@
 	a zwp_color_space_creator_v1 object which either returns an error
 	or the successfully created zwp_color_space_v1 object.
 
-	EOTF, chromaticity and whitepoint must not be unknown.
+	EOTF, chromaticity and whitepoint must not be unknown. Otherwise, or
+	if a given value is not listed in the enumeration, the protocol error
+	bad_enum is raised.
 
 	See the zwp_color_space_v1 and zwp_color_space_creator_v1 interface for
 	more details about the created object.
@@ -113,13 +130,19 @@
     </request>
 
     <request name="create_color_space_from_params">
-      <description summary="create a color space object from well-known names">
+      <description summary="create a color space object from parameters">
 	Create a color space object from parameters. This request returns
 	a zwp_color_space_creator_v1 object which either returns an error
 	or the successfully created zwp_color_space_v1 object.
 
-	EOTF must not be unknown. The white point must be inside the triangle
-	created by the red, green and blue primaries.
+	EOTF must not be unknown. Otherwise, or if a given EOTF is not listed
+	in the enumeration, the protocol error bad_enum is raised.
+
+	The white point must be inside the triangle created by the red, green
+	and blue primaries. Otherwise the bad_param protocol error is raised.
+
+	All the chromaticity values are multiplied by 10000 to produce the
+	integers carried by the protocol.
 
 	See the zwp_color_space_v1 and zwp_color_space_creator_v1 interface for
 	more details about the created object.
@@ -137,7 +160,7 @@
     </request>
 
     <request name="get_color_management_output">
-      <description summary="create a color management output from a wl_output">
+      <description summary="create a color management interface for a wl_output">
 	This creates a new zwp_color_management_output_v1 object for the
 	given wl_output.
 
@@ -148,11 +171,13 @@
     </request>
 
     <request name="get_color_management_surface">
-      <description summary="create a color management surface from a wl_surface">
+      <description summary="create a color management interface for a wl_surface">
 	This creates a new color zwp_color_management_surface_v1 object for the
-	given wl_surface. If get_color_management_surface is called with a
-	wl_surface that already has an active zwp_color_management_surface_v1
-	associated with it an error is raised.
+	given wl_surface.
+
+	If get_color_management_surface is called with a wl_surface that
+	already has an existing zwp_color_management_surface_v1
+	associated with it then the protocol error iface_exists is raised.
 
 	See the zwp_color_management_surface_v1 interface for more details.
       </description>
@@ -180,22 +205,31 @@
     <event name="color_space_changed">
       <description summary="color space changed">
 	The color_space_changed event is sent whenever the color space of the
-	output changed.
+	output changed. The event is not sent just because this
+	zwp_color_management_output_v1 object was created.
       </description>
     </event>
 
     <event name="extended_dynamic_range">
-      <description summary="extended dynamic range">
-	The event is sent after creating a zwp_color_management_output_v1
+      <description summary="output extended dynamic range">
+	The event is sent after creating this zwp_color_management_output_v1
 	object and whenever the value changes.
 
 	The extended dynamic range value describes how much dynamic range is
-	available relative to the reference white. A value of 1.0 means that
-	the the display can not display anything brighter than reference white.
-	A value of 3.0 means that the reference white is at one third of the
-	highest luminance the display can produce, for example EDR equals to 3.0
-	may be 240 nits or EDR 1.0 (SDR) may be 80 nits.
-	The value in the event is the EDR value multiplied by 1000.
+	available relative to the SDR maximum white. A value of 1.0 means that
+	the the display can not display anything brighter than SDR maximum white.
+	A value of 3.0 means that the SDR maximum white is at one third of the
+	highest luminance the display can produce.
+
+	The reference luminance for SDR maximum white is 80 cd/m^2.
+	Theoretically this allows to compute the maximum display luminance from
+	the output EDR value, but compositors should allow user control over
+	the EDR value used for the output for both adjusting to actual monitor
+	behavior and tuning to personal preference. Therefore EDR value 3.0
+	might not truly mean 240 cd/m^2 luminance in reality, for instance.
+
+	The EDR value is multiplied by 1000 to produce the integer value
+	carried by the protocol.
       </description>
       <arg name="value" type="uint" summary="EDR value * 1000"/>
     </event>
@@ -203,10 +237,15 @@
     <request name="get_color_space">
       <description summary="get the color space of the output">
 	This creates a new zwp_color_space_v1 object for the current color space
-	of the output. There always is exactly one color space active so the
-	client should destroy the color space created by earlier invocations of
-	this request. This is usually called as a reaction to the
-	color_space_changed_v1 event.
+	of the output. There always is exactly one color space active for an
+	output so the client should destroy the color space created by earlier
+	invocations of this request. This request is usually sent as a reaction
+	to the color_space_changed_v1 event or when creating a
+	zwp_color_management_output_v1 object.
+
+	After created, the zwp_color_space_v1 object will keep its original
+	color space identity regradless of what happens with the output it
+	was created from.
 
 	See the zwp_color_space_v1 interface for more details.
       </description>
@@ -217,13 +256,14 @@
 
     <request name="destroy" type="destructor">
       <description summary="destroy the color management output">
-	Destroy the color zwp_color_management_output_v1 object.
+	Destroy the color zwp_color_management_output_v1 object. This does not
+	affect any remaining protocol objects.
       </description>
     </request>
   </interface>
 
   <interface name="zwp_color_management_surface_v1" version="1">
-    <description summary="set color management information of a surface">
+    <description summary="color management extension to a surface">
 	A zwp_color_management_surface_v1 allows the client to set the color
 	space and HDR properties of a surface.
 
@@ -248,42 +288,46 @@
 
     <enum name="alpha_mode">
       <description summary="alpha mode">
-	Specifies if alpha is premultiplied or not
+	Specifies whether alpha is pre-multiplied into color channels or not.
+	If pre-multiplied, the linear alpha value is already multiplied with the
+	(non-linear) color channel code values in the color channels.
       </description>
-      <entry name="straight" value="0"/>
-      <entry name="premultiplied" value="1"/>
+      <entry name="straight" value="0" summary="alpha is independent from color channels"/>
+      <entry name="premultiplied" value="1" summary="alpha is pre-multiplied into color channels"/>
     </enum>
 
     <request name="set_extended_dynamic_range">
-      <description summary="set the extended dynamic range">
-	Set the extended dynamic range (EDR) value of the underlying surface.
+      <description summary="set the content extended dynamic range">
+	Set the extended dynamic range (EDR) value for the underlying surface.
 	The EDR value is double buffered, and will be applied at the time
 	wl_surface.commit of the corresponding wl_surface is called.
 
 	The EDR value describes how much dynamic range is available relative to
-	the reference white.
-	A value of 1.0 means that the reference white is at the highest
-	luminance of the image produced by the maximum code value.
-	A value of 3.0 means that the reference white is at one third of the
-	highest luminance of the image produced by the maxium code value.
+	the SDR maximum white. EDR value is directly proportional to luminance.
+	A value of 1.0 means that the SDR maximum white is the highest
+	possible luminance of the surface.
+	A value of 3.0 means that the SDR maximum white is one third of the
+	highest possible luminance of the surface.
 
 	The color space attached to the surface can make the code values in the
 	buffer non-linear in regards to the luminance. The code value to produce
-	a third of the luminance of the biggest code value therefor might not
+	a third of the luminance of the biggest code value therefore might not
 	be one third of the biggest code value.
 
 	By default the EDR value is 1.0. The compositor will tone map the image
-	to match the EDRs of the output the surface is shown on.
-	EDR value is directly proportional to luminance.
-	There might be performance benefits by providing the image tone mapped
-	to the correct EDR value of an output it is shown on.
-	The EDR value is multiplied by 1000.
+	to match the EDR of each output the surface is shown on.
+	There might be performance and image quality benefits by providing
+	content readily tone mapped to the EDR value of the output the surface
+	is shown on.
+
+	The EDR value is multiplied by 1000 to produce the integer value
+	carried by the protocol.
       </description>
      <arg name="value" type="uint" summary="EDR value * 1000"/>
     </request>
 
     <request name="set_color_space">
-      <description summary="set the color space">
+      <description summary="set the surface color space">
 	Set the color space of the underlying surface. The color space,
 	render intent and alpha mode are double buffered, and will be applied
 	at the time wl_surface.commit of the corresponding wl_surface is called.
@@ -292,19 +336,23 @@
 	The render intent gives the compositor a hint what to optimize for in
 	color space transformations.
 
-	The alpha channel is always linear. If the alpha mode is set to
-	premultiplied all color channels have been premultiplied by the alpha.
+	The alpha channel is always linear. The alpha mode determines whether
+	the color channels include alpha pre-multiplied or not. The default
+	alpha mode is pre-multiplied. Using straight alpha might have
+	performance benefits.
 
 	If a surface has no color space set, sRGB and an arbitrary render intent
 	will be assumed.
 
-	When 'color_space' is set to null and the state gets committed by
-	wl_surface.commit the surface does not have a color space set.
+	If 'color_space' is set to null, the surface reverts to having no color
+	space set, no render intent set, and has pre-multiplied alpha mode.
 
 	If the color space of the surface matches the color space of an output
 	it is shown on the performance and color accuracy might improve. To find
 	those color spaces the client can listen to the preferred_color_space or
-	the wl_surface.enter/leave events.
+	the wl_surface.enter/leave events. This improvement may require using
+	the color space object created by
+	zwp_color_management_output_v1.get_color_space.
       </description>
       <arg name="color_space" type="object" interface="zwp_color_space_v1" allow-null="true"/>
       <arg name="render_intent" type="uint" enum="render_intent" summary="render intent"/>
@@ -314,15 +362,17 @@
     <!-- TODO: HDR metadata request -->
 
     <event name="preferred_color_space">
-      <description summary="preferred color space">
-	The preferred_color_space event is sent once the preferred color
-	space is determined or changes.
+      <description summary="output for color optimization">
+	The preferred_color_space event is sent when the compositor determines
+	or switches the output that implies the preferred color space. The
+	preferred color space is the one which likely has the most performance
+	and quality benefits if used by a client for its surface contents.
 
 	The event does not carry a zwp_color_space_v1 but a wl_output object.
 	The concrete zwp_color_space_v1 can be created by calling
 	zwp_color_management_output_v1.get_color_space on the output and
-	listening to the zwp_color_management_output_v1.color_space_changed
-	event.
+	listening to zwp_color_management_output_v1.color_space_changed
+	events.
 
 	As clients may bind to the same global wl_output multiple
 	times, this event is sent for each bound instance that matches
@@ -337,7 +387,7 @@
     </event>
 
     <request name="destroy" type="destructor">
-      <description summary="destroy the color management surface">
+      <description summary="destroy the color management interface for a surface">
 	Destroy the zwp_color_management_surface_v1 object.
 
 	When the last zwp_color_management_surface_v1 object for a wl_surface
@@ -363,21 +413,20 @@
       </description>
       <entry name="malformed_icc" value="0x1" summary="malformed ICC profile"/>
       <entry name="bad_icc" value="0x2" summary="ICC profile does not meet requirements"/>
-      <entry name="bad_name" value="0x4" summary="names must not be unknown"/>
-      <entry name="bad_primaries" value="0x8" summary="bad primaries"/>
-      <entry name="bad_whitepoint" value="0x10" summary="bad whitepoint"/>
+      <entry name="bad_primaries" value="0x4" summary="bad primaries"/>
+      <entry name="bad_whitepoint" value="0x8" summary="bad whitepoint"/>
     </enum>
 
     <event name="created">
       <description summary="color space object created">
-	Sends the successfully created color space.
+	Delivers the successfully created color space.
       </description>
       <arg name="id" type="new_id" interface="zwp_color_space_v1"/>
     </event>
 
     <event name="error">
       <description summary="color space creation failed">
-	This event is send if the color space creation failed.
+	This event is sent if the color space creation failed.
       </description>
       <arg name="error" type="uint" enum="creation_error" summary="error bitmask"/>
     </event>
@@ -385,7 +434,7 @@
 
   <interface name="zwp_color_space_v1" version="1">
     <description summary="color space">
-	Describes a color space which can be attached to a surface
+	Refers to a color space which can be attached to a surface
 	(zwp_color_management_surface_v1.set_color_space) and provides
 	information like the ICC profile and the well-known name to alow clients
 	to do color space transformations.
@@ -404,14 +453,15 @@
 
     <event name="information">
       <description summary="color space information">
-	Information describing the color space is send as a response to
+	Information describing the color space is sent as a response to
 	zwp_color_space_v1.get_information.
 
 	The icc argument provides a file descriptor to the client which can be
 	memory-mapped to provide the ICC profile describing the color space.
-	The fd must be mapped with MAP_PRIVATE by the client. Note, that the
-	fd as well as the contents of the profile may not be the same as the fd
-	passed to zwp_color_manager_v1.create_color_space.
+	The fd must be mapped with MAP_PRIVATE and read-only by the client.
+	Note, that the contents of the profile may not be the same as
+	passed to zwp_color_manager_v1.create_color_space when using an ICC
+	profile.
 
 	EOTF, chromaticity and whitepoint contain well-known names of those
 	properties if available and unknown otherwise.
