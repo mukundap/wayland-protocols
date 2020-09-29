@@ -247,6 +247,8 @@
 	color space identity regradless of what happens with the output it
 	was created from.
 
+	The resulting color space object allows get_information request.
+
 	See the zwp_color_space_v1 interface for more details.
       </description>
       <arg name="id" type="new_id" interface="zwp_color_space_v1"/>
@@ -420,6 +422,8 @@
     <event name="created">
       <description summary="color space object created">
 	Delivers the successfully created color space.
+
+	The resulting color space object does not allow get_information request.
       </description>
       <arg name="id" type="new_id" interface="zwp_color_space_v1"/>
     </event>
@@ -444,10 +448,21 @@
 	zwp_color_management_output_v1.get_color_space.
     </description>
 
+    <enum name="error">
+      <entry name="no_information" value="0" summary="get_information disallowed"/>
+    </enum>
+
     <request name="get_information">
       <description summary="get information about the color space">
 	The compositor will send the information event when receiving this
 	request.
+
+	This request is allowed only on zwp_color_space_v1 objects where the
+	message that created the object specifies that get_information is
+	allowed. Otherwise protocol error no_information is raised.
+
+	See zwp_color_management_output_v1.get_color_space and
+	zwp_color_space_creator_v1.created.
       </description>
     </request>
 
