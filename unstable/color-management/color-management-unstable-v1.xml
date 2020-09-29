@@ -439,13 +439,28 @@
   <interface name="zwp_color_space_v1" version="1">
     <description summary="color space">
 	Refers to a color space which can be attached to a surface
-	(zwp_color_management_surface_v1.set_color_space) and provides
-	information like the ICC profile and the well-known name to alow clients
-	to do color space transformations.
+	(zwp_color_management_surface_v1.set_color_space). It may provide
+	information like the ICC profile and the well-known names to allow
+	clients to know the color space and do color transformations of their
+	own.
+
+	Once created and regardless of how it was created, a zwp_color_space_v1
+	object always refers to one fixed color space.
 
 	The client can create a zwp_color_space_v1 object with
 	zwp_color_manager_v1 requests or from an output by calling
 	zwp_color_management_output_v1.get_color_space.
+
+	Other extensions may define more zwp_color_space_v1 factory interfaces.
+	Those interfaces must explicitly specify the interface version for the
+	object created, otherwise versioning zwp_color_space_v1 correctly
+	becomes impossible. Using a 'new_id' argument without 'interface'
+	attribute defined in XML forces code generators to add two explicit
+	arguments: interface and version. Version is the explicit version
+	number needed, and interface should be required to be
+	"zwp_color_space_v1". The compositor supported zwp_color_space_v1
+	versions are defined by the advertised zwp_color_manager_v1 in
+	wl_registry.
     </description>
 
     <enum name="error">
@@ -454,38 +469,66 @@
 
     <request name="get_information">
       <description summary="get information about the color space">
-	The compositor will send the information event when receiving this
-	request.
+	As a reply to this request, the compositor will send all available
+	information events describing this color space object and finally
+	the 'done' event. Other extensions may define more events to be sent
+	before 'done'.
 
 	This request is allowed only on zwp_color_space_v1 objects where the
 	message that created the object specifies that get_information is
 	allowed. Otherwise protocol error no_information is raised.
+
+	Every get_information request on the same object will always return the
+	exact same data.
 
 	See zwp_color_management_output_v1.get_color_space and
 	zwp_color_space_creator_v1.created.
       </description>
     </request>
 
-    <event name="information">
-      <description summary="color space information">
-	Information describing the color space is sent as a response to
+    <event name="icc_file">
+      <description summary="ICC profile describing the color space">
+	This event may be sent only as a response to
 	zwp_color_space_v1.get_information.
 
 	The icc argument provides a file descriptor to the client which can be
 	memory-mapped to provide the ICC profile describing the color space.
 	The fd must be mapped with MAP_PRIVATE and read-only by the client.
-	Note, that the contents of the profile may not be the same as
-	passed to zwp_color_manager_v1.create_color_space when using an ICC
-	profile.
 
-	EOTF, chromaticity and whitepoint contain well-known names of those
-	properties if available and unknown otherwise.
+	Compositors should send this event always when information is requested.
+	ICC profiles provide the common foundation which all color managed
+	clients may rely on.
       </description>
       <arg name="icc" type="fd" summary="ICC profile file descriptor"/>
       <arg name="icc_size" type="uint" summary="ICC profile size, in bytes"/>
+    </event>
+
+    <event name="names">
+      <description summary="well-known names of a color space">
+	This event may be sent only as a response to
+	zwp_color_space_v1.get_information.
+
+	EOTF, chromaticity and whitepoint contain well-known names of those
+	properties if available and unknown otherwise.
+
+	Compositors should not assume that all clients can understand these
+	names. The names are provided for client convenience. If a client
+	understands the name triplet, it may ignore other information about
+	the color space, the ICC profile for example.
+      </description>
       <arg name="eotf" type="uint" enum="zwp_color_manager_v1.eotf_names" summary="EOTF"/>
       <arg name="chromaticity" type="uint" enum="zwp_color_manager_v1.chromaticity_names" summary="chromaticity"/>
       <arg name="whitepoint" type="uint" enum="zwp_color_manager_v1.whitepoint_names" summary="whitepoint"/>
+    </event>
+
+    <event name="done">
+      <description summary="end of color space information">
+	This event may be sent only as a response to
+	zwp_color_space_v1.get_information.
+
+	This signifies that all color space information events have been
+	delivered for the object.
+      </description>
     </event>
 
     <request name="destroy" type="destructor">
