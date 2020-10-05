@@ -1,5 +1,8 @@
 .. Copyright 2020 Collabora, Ltd.
 
+.. contents::
+
+
 Wayland Color Management and HDR Design Goals
 =============================================
 
@@ -377,6 +380,158 @@ Whitepoint: A white point is a set of chromaticity coordinates to define the col
 .. _`ISO/CIE DIS 11664-2`: https://www.iso.org/standard/77215.html
 
 
+
+High Dynamic Range
+==================
+
+At the simplest level, High Dynamic Range (HDR) refers to a luminance range
+larger than traditional. Many also associate wide color gamut to HDR, but that
+has been defined with traditional color management already. The traditional
+dynamic range is referred to as Standard Dynamic Range (SDR). HDR implies
+brighter whites which allows highlights to be brighter and bright image areas
+to contain more details than SDR. HDR may also imply deeper blacks, improving
+details in the dark end of the luminance axis as well, because traditionally
+"black" still has non-zero luminance. To deliver all the additional details and
+avoid losing details in the SDR range, HDR imagery needs more bits per pixel
+than traditional content.
+
+This protocol extension aims to integrate HDR with color management in a way
+that both are possible to achieve simultaneously when clients so choose. While
+color management and ICC profiles are concerned of relative luminance or code
+values on each color channel, the HDR part of the extension extends the
+luminance range beyond SDR. Wayland clients are able to do their own color
+management and tone mapping for HDR the same way they do color management for
+SDR: prepare content to match the output properties, which will let it go
+through the compositor practically unaltered. With SDR color management they
+use the output color space, and with HDR color management they use also the
+output dynamic range.
+
+The output and content dynamic range is expressed as an extended dynamic range
+value. When content dynamic range differs from that of an output, the Wayland
+compositor in a system is expected to compensate by applying a suitable tone
+mapping.
+
+Extended Dynamic Range for Relative Luminance
+---------------------------------------------
+
+In this extension the dynamic range (or luminance range) is communicated as
+Extended Dynamic Range (EDR) value. The `definition of EDR`_ as used here comes
+from Apple but with consideration to luminance of black. EDR value is the
+luminance ratio of the HDR maximum white and the SDR maximum white using the
+black level (which may be higher than 0 cd/m²) as the origin. Therefore, EDR
+value 1.0 means purely SDR as there is no difference between SDR and HDR
+maximum white luminances. EDR value 4.0 means the full (HDR) range is four
+times the SDR range. In other words,
+
+::
+
+        HDR maximum white - black
+  EDR = ------------------------- .
+        SDR maximum white - black
+
+Not all monitors present SDR content with the same luminance. There are
+standards that use the values of 80 or 200 cd/m² as the SDR maximum white
+luminance, but varying viewing conditions and user preferences may call for any
+value. Therefore the absolute luminance for the SDR maximum white is not a fixed
+quantity. Monitors do have some absolute maximum luminance they can reach, so
+how much dynamic range there is left for HDR may well depend on the monitor's
+"normal" (SDR) brightness, or in other words the user's preferred nominal
+brightness.
+
+An output's EDR value depends on several things: the monitor capabilities (the
+minimum luminance, the maximum HDR luminance), the monitor settings (adjustment
+knobs), and user preference for the SDR maximum white level which is affected
+by the viewing environment. Therefore Wayland compositors should allow users to
+configure an output's EDR value. This could be in the form of setting the
+relative SDR maximum white level as a percentage of the video signal, the
+absolute luminance of the SDR maximum white in cd/m² if you can trust EDID on
+the maximum luminance, or the output's EDR value as is.
+
+A default EDR value for a HDR video mode output may be possible to approximate
+from EDID denoted maximum luminance if the compositor wants to default to one
+cd/m² number for the SDR maximum white, but that assumes certain viewing
+conditions, e.g. average office environment. Using a percentage of the video
+signal range for the default EDR value is not recommended because of monitors
+differing wildly in their maximum luminance, assuming the video signal encodes
+relative and not absolute luminance. Quantization effects or artifacts due to
+framebuffer pixel format and the pixel bit depth in the video signal may also
+factor in. With low bit depth it might be better to settle for brighter overall
+image from smaller EDR value than to risk losing details in the SDR range. For
+an SDR video mode, the default EDR value is 1.0.
+
+`Figure 3`_ shows three EDR values and their relative SDR and HDR maximum white
+luminance levels as well as the black level. EDR value represents the ratio
+between HDR and SDR compared to black, not the overall image brightness as can
+be seen in case c) whose EDR value is smaller than for the other less bright
+examples. This reflects the intent of HDR: brighter and more detailed
+highlights rather than brighter image.
+
+.. _Figure 3:
+
+.. figure:: images/monitor-edr.svg.png
+   :alt: EDR value diagram
+
+   Figure 3.
+   Three different monitor or content luminance characteristics.
+   The ratio of black to HDR maximum white luminance and black to SDR maximum
+   white luminance determines the EDR value. The black level may be greater
+   than 0 cd/m² and may differ.
+
+Content provided by Wayland clients have their own EDR values per
+``wl_surface``. Content EDR value is calculated similarly to output EDR value.
+Content HDR maximum white luminance, content SDR maximum white luminance, and
+content black luminance as all chosen by the content creator. If content is
+encoded with relative luminance, calculating the EDR value does not require
+mapping to absolute luminance.
+
+If content is encoded with display-referred absolute luminance, the Wayland
+client needs to know the content (encoding) HDR maximum white luminance, the
+(movie) SDR maximum white luminance and the black luminance that fit the
+artistic intention of the content creator to calculate the appropriate EDR
+value. Note, that if the content SDR maximum white luminance changes during a
+movie to follow the scene average brightness, changing the content EDR value to
+match has the opposite effect: bright scenes get toned down and dark scenes get
+toned up while the SDR maximum white level stays the same on display. Therefore
+for content encoded in absolute luminance, the SDR maximum white luminance is
+merely an arbitrary scaling factor that the client needs to choose.
+
+The use of EDR value to describe content dynamic range means that content
+encoded with absolute luminance cannot be presented with absolute luminance
+(nit-for-nit). This is intentional to avoid assuming a standard viewing
+environment which is usually relatively dark and therefore could lead to a too
+dark image for the actual viewing environment.
+
+.. _`definition of EDR`: https://developer.apple.com/documentation/metal/drawable_objects/displaying_hdr_content_in_a_metal_layer/performing_your_own_tone_mapping
+
+
+Absolute Luminance Content
+--------------------------
+
+TBD
+
+EOTFs that define their output in absolute luminance (cd/m²) need something else
+than content EDR value. Some specifications propose a "reference white"
+absolute luminance, others might not, hence it probably needs to be communicated
+explicitly.
+
+EDID can sometimes provide the maximum HDR absolute luminance. Output EDR value
+could be used to find the SDR maximum white luminance, but should the content
+reference white luminance be mapped to that? Maybe, maybe not.
+
+How to map an absolute luminance range to monitor range?
+
+How to communicate monitor absolute luminance to clients so that they can match
+it and avoid tone-mapping in a compositor?
+
+
+Scene-Referred Luminance
+------------------------
+
+TBD
+
+HLG
+
+
 Glossary
 ========
 API
@@ -409,6 +564,9 @@ KMS
 
 LUT
    look-up table
+
+nit
+   cd/m², candelas per square meter, absolute unit of luminance
 
 OETF
    opto-electrical transfer function
@@ -456,3 +614,10 @@ New use cases?
   profiles for them, so that on one monitor you see the "real" colors and the
   other monitor shows you image color details you don't normally see due to the
   monitor having a small gamut.
+
+HDR gamut metadata: pixel encoding uses one (standard) color space, but the
+actual content gamut used is significantly smaller. A compositor needs to know
+the pixel encoding to decode pixels, and it needs to know the gamut for better
+`gamut mapping`_.
+
+.. _`gamut mapping`: http://argyllcms.com/doc/iccgamutmapping.html

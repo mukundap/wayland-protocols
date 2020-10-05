@@ -245,17 +245,22 @@
 	event common to output events across all extensions.
 
 	The extended dynamic range value describes how much dynamic range is
-	available relative to the SDR maximum white. A value of 1.0 means that
-	the the display can not display anything brighter than SDR maximum white.
-	A value of 3.0 means that the SDR maximum white is at one third of the
-	highest luminance the display can produce.
+	available relative to the SDR maximum white. EDR value is proportional
+	to luminance, and the luminance of black is used as the zero level.
+	A value of 1.0 means that the the display can not display
+	anything brighter than SDR maximum white. A value of 3.0 means that the
+	SDR maximum white is at one third of the highest luminance the display
+	can produce.
 
-	The reference luminance for SDR maximum white is 80 cd/m^2.
-	Theoretically this allows to compute the maximum display luminance from
-	the output EDR value, but compositors should allow user control over
-	the EDR value used for the output for both adjusting to actual monitor
-	behavior and tuning to personal preference. Therefore EDR value 3.0
-	might not truly mean 240 cd/m^2 luminance in reality, for instance.
+	The absolute luminance of the SDR maximum white depends on the monitor
+	capabilities, the viewing conditions and the viewer personal
+	preferences. A such, it cannot be given a single value in cd/m².
+	Compositors using HDR video modes should allow users to control the the
+	SDR maximum white level which the output EDR value is calculated from.
+
+	The SDR maximum white is a relative reference luminance that allows
+	to tone-map content from different dynamic ranges into a single common
+	dynamic range for display.
 
 	The EDR value is multiplied by 1000 to produce the integer value
 	carried by the protocol.
@@ -332,11 +337,11 @@
 	The EDR value is double buffered, and will be applied at the time
 	wl_surface.commit of the corresponding wl_surface is called.
 
-	The EDR value describes how much dynamic range is available relative to
-	the SDR maximum white. EDR value is directly proportional to luminance.
-	A value of 1.0 means that the SDR maximum white is the highest
-	possible luminance of the surface.
-	A value of 3.0 means that the SDR maximum white is one third of the
+	The EDR value describes how much dynamic range is encoded relative to
+	the SDR maximum white. EDR value is proportional to luminance, using
+	the luminance of black as the zero level. A value of 1.0 means that the
+	SDR maximum white is the highest possible luminance of the surface. A
+	value of 3.0 means that the SDR maximum white is one third of the
 	highest possible luminance of the surface.
 
 	The color space attached to the surface can make the code values in the
@@ -344,11 +349,20 @@
 	a third of the luminance of the biggest code value therefore might not
 	be one third of the biggest code value.
 
+	For the definition of the SDR maximum white on an output, see
+	zwp_color_management_output_v1.extended_dynamic_range. Content
+	producers are free to choose their SDR maximum white level. How it
+	shall be displayed depends on the monitor capabilities and the output
+	EDR value.
+
 	By default the EDR value is 1.0. The compositor will tone map the image
-	to match the EDR of each output the surface is shown on.
-	There might be performance and image quality benefits by providing
-	content readily tone mapped to the EDR value of the output the surface
-	is shown on.
+	to match the EDR of each output the surface is shown on. The aim for
+	the EDR-EDR mapping is to produce a relative luminance mapping that
+	looks equally good regardless of the viewing conditions and the monitor
+	capabilities, assuming the output EDR value was tuned to the output
+	capabilities and the viewing environment. There might be performance
+	and image quality benefits from providing content readily tone mapped to
+	the EDR value of the output the surface is shown on.
 
 	The EDR value is multiplied by 1000 to produce the integer value
 	carried by the protocol.
