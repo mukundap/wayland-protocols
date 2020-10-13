@@ -261,6 +261,122 @@ For general information on calibration versus profiling, see `Elle Stone`_.
 .. _`Elle Stone`: https://ninedegreesbelow.com/photography/monitor-profile-calibrate-confuse.html
 
 
+Well-Known EOTFs, chromaticities and whitepoints
+================================================
+
+EOTF: An EOTF is the conversion from non-linear electronic representation to
+the linear display light.
+
+For more information, refer to the spec `Transfer functions`_.
+
++--------------+---------------------------------------------------------------+
+| EOTF         | Description                                                   |
++--------------+---------------------------------------------------------------+
+| unknown      | Unknown EOTF                                                  |
++--------------+---------------------------------------------------------------+
+| linear       | Linear transfer function                                      |
++--------------+---------------------------------------------------------------+
+| srgb         | sRGB(standard Red Green Blue) transfer function               |
++--------------+---------------------------------------------------------------+
+| bt2087       | BT.2087 transfer function                                     |
++--------------+---------------------------------------------------------------+
+| adobergb     | Adobe RGB transfer function                                   |
++--------------+---------------------------------------------------------------+
+
+
+Chromaticity: Chromaticity is an objective specification of the quality of a
+color regardless of its luminance.
+
+Chromaticities in the CIE 1931 system are always expressed in xyY with Y
+omitted.
+
+For more information, refer to the spec CIE 1931 color space.
+
++--------------+--------------------------+-----------------------------------+
+| Chromaticity | RGB primaries (x, y)     | Description                       |
++--------------+--------------------------+-----------------------------------+
+| unknown      |                          | Unknown chromaticity              |
++--------------+--------------------------+-----------------------------------+
+|              | R x = 0.630, y = 0.340   |                                   |
+|              +--------------------------+                                   |
+| bt601        | G x = 0.310, y = 0.595   | `ITU-R BT.601`_                   |
+| (525-line)   +--------------------------+                                   |
+|              | B x = 0.155, y = 0.070   |                                   |
++--------------+--------------------------+-----------------------------------+
+|              | R x = 0.640, y = 0.330   |                                   |
+|              +--------------------------+                                   |
+| bt601        | G x = 0.290, y = 0.600   | `ITU-R BT.601`_                   |
+| (625-line)   +--------------------------+                                   |
+|              | B x = 0.150, y = 0.060   |                                   |
++--------------+--------------------------+-----------------------------------+
+|              | R x = 0.630, y = 0.340   |                                   |
+|              +--------------------------+                                   |
+| smpte170m    | G x = 0.310, y = 0.595   | `SMPTE 170M-1999`_                |
+|              +--------------------------+                                   |
+|              | B x = 0.155, y = 0.070   |                                   |
++--------------+--------------------------+-----------------------------------+
+|              | R x = 0.640, y = 0.330   |                                   |
+|              +--------------------------+                                   |
+| bt709        | G x = 0.300, y = 0.600   | `ITU-R BT.709`_                   |
+|              +--------------------------+                                   |
+|              | B x = 0.150, y = 0.060   |                                   |
++--------------+--------------------------+-----------------------------------+
+|              | R x = 0.708, y = 0.292   |                                   |
+|              +--------------------------+                                   |
+| bt2020       | G x = 0.170, y = 0.797   | `ITU-R BT.2020`_                  |
+|              +--------------------------+                                   |
+|              | B x = 0.131, y = 0.046   |                                   |
++--------------+--------------------------+-----------------------------------+
+|              | R x = 0.640, y = 0.330   |                                   |
+|              +--------------------------+                                   |
+| srgb         | G x = 0.300, y = 0.600   | `IEC/4WD 61966-2-1: default       |
+| (unverified) +--------------------------+ RGB colour space - sRGB`_         |
+|              | B x = 0.150, y = 0.060   |                                   |
++--------------+--------------------------+-----------------------------------+
+|              | R x = 0.6800, y = 0.3200 |                                   |
+|              +--------------------------+                                   |
+| displayp3    | G x = 0.2650, y = 0.6900 | `Display P3`_                     |
+|              +--------------------------+                                   |
+|              | B x = 0.1500, y = 0.0600 |                                   |
++--------------+--------------------------+-----------------------------------+
+|              | R x = 0.6400, y = 0.3300 |                                   |
+|              +--------------------------+                                   |
+| adobergb     | G x = 0.2100, y = 0.7100 | `Adobe RGB`_                      |
+|              +--------------------------+                                   |
+|              | B x = 0.1500, y = 0.0600 |                                   |
++--------------+--------------------------+-----------------------------------+
+
+
+Whitepoint: A white point is a set of chromaticity coordinates to define the color white.
+
++--------------+--------------------------+-----------------------------------+---------------------------------------+
+| White point  | Chromaticity coordinates | Description                       | Documentation source                  |
+|              | (x, y)                   |                                   |                                       |
++--------------+--------------------------+-----------------------------------+---------------------------------------+
+| unknown      |                          | Unknown whitepoint                |                                       |
++--------------+--------------------------+-----------------------------------+---------------------------------------+
+| dci          | x = 0.3140, y = 0.3510   | DCI standard for digital cinema   | `SMPTE-EG-0432-1:2010`_ Digital Source|
+| (unverified) |                          | motion pictures                   | Processing                            |
++--------------+--------------------------+-----------------------------------+---------------------------------------+
+| d50          | x = 0.3457, y = 0.3585   | D50 standard for graphic arts     | `ISO/CIE DIS 11664-2`_ Colorimetry —  |
+| (unverified) |                          | industry                          | Part 2: CIE standard illuminants      |
++--------------+--------------------------+-----------------------------------+---------------------------------------+
+| d65          | x = 0.3127, y = 0.3290   | D65 standard for video displays   | `ISO/CIE DIS 11664-2`_ Colorimetry —  |
+| (unverified) |                          |                                   | Part 2: CIE standard illuminants      |
++--------------+--------------------------+-----------------------------------+---------------------------------------+
+
+.. _`Transfer functions`: https://www.khronos.org/registry/DataFormat/specs/1.3/dataformat.1.3.html#TRANSFER_CONVERSION
+.. _`ITU-R BT.601`: http://www.itu.int/rec/R-REC-BT.601/en
+.. _`SMPTE 170M-1999`: https://www.itu.int/rec/R-REC-BT.1700/en
+.. _`ITU-R BT.709`: https://www.itu.int/rec/R-REC-BT.709/en
+.. _`ITU-R BT.2020`: http://www.itu.int/rec/R-REC-BT.2020/en
+.. _`IEC/4WD 61966-2-1: default RGB colour space - sRGB`: https://webstore.iec.ch/publication/6169
+.. _`Display P3`: https://developer.apple.com/reference/coregraphics/cgcolorspace/1408916-displayp3
+.. _`Adobe RGB`: https://www.adobe.com/digitalimag/pdfs/AdobeRGB1998.pdf
+.. _`SMPTE-EG-0432-1:2010`: http://www.color.org/chardata/rgb/DCIP3.xalter
+.. _`ISO/CIE DIS 11664-2`: https://www.iso.org/standard/77215.html
+
+
 Glossary
 ========
 API
