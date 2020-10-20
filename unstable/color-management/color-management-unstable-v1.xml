@@ -331,6 +331,20 @@
       <entry name="premultiplied" value="1" summary="alpha is pre-multiplied into color channels"/>
     </enum>
 
+    <request name="set_alpha_mode">
+      <description summary="set the surface alpha mode">
+	Assuming an alpha channel exists, it is always linear. The alpha mode
+	determines whether the color channels include alpha pre-multiplied or
+	not. Using straight alpha might have performance benefits.
+
+	Alpha mode is double buffered, and will be applied at the time
+	wl_surface.commit of the corresponding wl_surface is called.
+
+	By default, a surface is assumed to have pre-multiplied alpha.
+      </description>
+      <arg name="alpha_mode" type="uint" enum="alpha_mode" summary="alpha mode"/>
+    </request>
+
     <request name="set_extended_dynamic_range">
       <description summary="set the content extended dynamic range">
 	Set the extended dynamic range (EDR) value for the underlying surface.
@@ -372,20 +386,16 @@
 
     <request name="set_color_space">
       <description summary="set the surface color space">
-	Set the color space of the underlying surface. The color space,
-	render intent and alpha mode are double buffered, and will be applied
+	Set the color space of the underlying surface. The color space and
+	render intent are double buffered, and will be applied
 	at the time wl_surface.commit of the corresponding wl_surface is called.
 
 	<!-- FIXME: same problem as in the render_intent enum -->
 	The render intent gives the compositor a hint what to optimize for in
 	color space transformations.
 
-	The alpha channel is always linear. The alpha mode determines whether
-	the color channels include alpha pre-multiplied or not. Using straight
-	alpha might have performance benefits.
-
-	By default, a surface is assumed to have the sRGB color space, an
-	arbitrary render intent, and pre-multiplied alpha.
+	By default, a surface is assumed to have the sRGB color space and an
+	arbitrary render intent.
 
 	If the color space of the surface matches the color space of an output
 	it is shown on the performance and color accuracy might improve. To find
@@ -396,7 +406,6 @@
       </description>
       <arg name="color_space" type="object" interface="zwp_color_space_v1"/>
       <arg name="render_intent" type="uint" enum="render_intent" summary="render intent"/>
-      <arg name="alpha_mode" type="uint" enum="alpha_mode" summary="alpha mode"/>
     </request>
 
     <request name="set_default_color_space">
