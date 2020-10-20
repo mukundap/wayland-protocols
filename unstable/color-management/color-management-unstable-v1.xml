@@ -102,7 +102,6 @@
       <entry name="icc_fd" value="0" summary="given ICC fd has bad properties"/>
       <entry name="bad_enum" value="1" summary="bad value given as a well-known name"/>
       <entry name="bad_param" value="2" summary="bad parameter value"/>
-      <entry name="iface_exists" value="3" summary="wl_surface has an existing color management interface"/>
     </enum>
 
     <request name="create_color_space_from_icc">
@@ -200,10 +199,6 @@
 	This creates a new color zwp_color_management_surface_v1 object for the
 	given wl_surface.
 
-	If get_color_management_surface is called with a wl_surface that
-	already has an existing zwp_color_management_surface_v1
-	associated with it then the protocol error iface_exists is raised.
-
 	See the zwp_color_management_surface_v1 interface for more details.
       </description>
       <arg name="id" type="new_id" interface="zwp_color_management_surface_v1"/>
@@ -223,6 +218,12 @@
 	A zwp_color_management_output_v1 describes the color properties of an
 	output.
 
+	When zwp_color_management_output_v1 object is created, it will send
+	its initial events followed by a wl_output.done event. When creating
+	wl_output and its extension objects, use a final wl_display.sync to
+	guarantee that all output events have been received across all
+	extensions.
+
 	If the wl_output associated with the zwp_color_management_output_v1 is
 	destroyed, the zwp_color_management_output_v1 object becomes inert.
     </description>
@@ -230,15 +231,18 @@
     <event name="color_space_changed">
       <description summary="color space changed">
 	The color_space_changed event is sent whenever the color space of the
-	output changed. The event is not sent just because this
-	zwp_color_management_output_v1 object was created.
+	output changed, followed by one wl_output.done event common to
+	output events across all extensions.
+
+	This is not an initial event.
       </description>
     </event>
 
     <event name="extended_dynamic_range">
       <description summary="output extended dynamic range">
-	The event is sent after creating this zwp_color_management_output_v1
-	object and whenever the value changes.
+	This is both an initial event and sent whenever the value changed.
+	When the value changed, this event is followed by one wl_output.done
+	event common to output events across all extensions.
 
 	The extended dynamic range value describes how much dynamic range is
 	available relative to the SDR maximum white. A value of 1.0 means that
@@ -265,12 +269,11 @@
 	of the output. There always is exactly one color space active for an
 	output so the client should destroy the color space created by earlier
 	invocations of this request. This request is usually sent as a reaction
-	to the color_space_changed_v1 event or when creating a
+	to the color_space_changed event or when creating a
 	zwp_color_management_output_v1 object.
 
-	After created, the zwp_color_space_v1 object will keep its original
-	color space identity regradless of what happens with the output it
-	was created from.
+	The created zwp_color_space_v1 object preserves the color space
+	of the output from the time the object was created.
 
 	The resulting color space object allows get_information request.
 
@@ -364,15 +367,11 @@
 	color space transformations.
 
 	The alpha channel is always linear. The alpha mode determines whether
-	the color channels include alpha pre-multiplied or not. The default
-	alpha mode is pre-multiplied. Using straight alpha might have
-	performance benefits.
+	the color channels include alpha pre-multiplied or not. Using straight
+	alpha might have performance benefits.
 
-	If a surface has no color space set, sRGB and an arbitrary render intent
-	will be assumed.
-
-	If 'color_space' is set to null, the surface reverts to having no color
-	space set, no render intent set, and has pre-multiplied alpha mode.
+	By default, a surface is assumed to have the sRGB color space, an
+	arbitrary render intent, and pre-multiplied alpha.
 
 	If the color space of the surface matches the color space of an output
 	it is shown on the performance and color accuracy might improve. To find
@@ -381,9 +380,17 @@
 	the color space object created by
 	zwp_color_management_output_v1.get_color_space.
       </description>
-      <arg name="color_space" type="object" interface="zwp_color_space_v1" allow-null="true"/>
+      <arg name="color_space" type="object" interface="zwp_color_space_v1"/>
       <arg name="render_intent" type="uint" enum="render_intent" summary="render intent"/>
       <arg name="alpha_mode" type="uint" enum="alpha_mode" summary="alpha mode"/>
+    </request>
+
+    <request name="set_default_color_space">
+      <description summary="set the surface color space to default">
+	This request sets the surface color space to the defaults, see
+	set_color_space. The setting will be applied at the time
+	wl_surface.commit of the corresponding wl_surface is called.
+      </description>
     </request>
 
     <!-- TODO: HDR metadata request -->
