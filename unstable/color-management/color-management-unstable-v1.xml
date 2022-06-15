@@ -28,59 +28,50 @@
   </copyright>
 
   <description summary="color management protocol">
-	This protocol specifies a way for a client to set the color space and
-	HDR metadata of a surface and to get information about the color spaces
-	and HDR capabilities of outputs.
+	An image description includes SDR and HDR colorimetry and encoding, HDR
+	metadata, and viewing environment parameters. This extension allows a
+	client to set an image description for its windows, and get the image
+	description of outputs.
   </description>
 
   <interface name="zwp_color_manager_v1" version="1">
     <description summary="color manager singleton">
 	A global interface used for getting color management surface and color
-	management output objects as well as creating color space objects from
+	management output objects as well as creating image description objects from
 	ICC profiles, parameters, or enumerated names.
     </description>
 
-    <enum name="eotf_names">
-      <description summary="well-known EOTF names">
-	Names that describe a well-known EOTF.
+    <enum name="cicp_color_primaries_id">
+      <description summary="cicp_color_primaries_map">
+	Well known chromaticity names
 
-	A compositor must support all of these based on the protocol interface
-	version.
+	ColourPrimaries as defined in Rec ITU-T H.273 Coding-independent code points for video signal type identification.
       </description>
-      <!-- TODO EOTFs -->
-      <!-- <entry name="bt1886" value="" summary="BT.1886 transfer function"/> -->
-      <!-- <entry name="dci_p3" value="" summary="DCI-P3 transfer function"/> -->
-      <entry name="unknown" value="0" summary="unknown EOTF"/>
-      <entry name="linear" value="1" summary="Linear transfer function"/>
-      <entry name="srgb" value="2" summary="sRGB transfer function"/>
-      <entry name="bt2087" value="3" summary="BT.2087 transfer function"/>
-      <entry name="adobergb" value="4" summary="AdobeRGB transfer function"/>
-    </enum>
-
-    <enum name="chromaticity_names">
-      <description summary="well-known chromaticity names">
-	Names that describe well-known chromaticities.
-
-	A compositor must support all of these based on the protocol interface
-	version.
-      </description>
-      <entry name="unknown" value="0" summary="unknown chromaticity"/>
-      <entry name="bt601_525_line" value="1"
-             summary="ITU-R BT.601 http://www.itu.int/rec/R-REC-BT.601/en"/>
-      <entry name="bt601_625_line" value="2"
-             summary="ITU-R BT.601 http://www.itu.int/rec/R-REC-BT.601/en"/>
-      <entry name="smpte170m" value="3"
-             summary="SMPTE 170M-1999 https://www.itu.int/rec/R-REC-BT.1700/en"/>
-      <entry name="bt709" value="4"
-             summary="ITU-R BT.709 https://www.itu.int/rec/R-REC-BT.709/en"/>
-      <entry name="bt2020" value="5"
-             summary="ITU-R BT.2020 http://www.itu.int/rec/R-REC-BT.2020/en"/>
-      <entry name="srgb" value="6"
-             summary="IEC/4WD 61966-2-1: sRGB https://webstore.iec.ch/publication/6169"/>
-      <entry name="displayp3" value="7"
-             summary="Display P3 https://developer.apple.com/reference/coregraphics/cgcolorspace/1408916-displayp3"/>
-      <entry name="adobergb" value="8"
-             summary="Adobe RGB https://www.adobe.com/digitalimag/pdfs/AdobeRGB1998.pdf"/>
+      <entry name="bt709_6" value="1" summary="ITU-R BT.709-6"/>
+      <entry name="smpte_rp_177" value="1" summary="SMPTE RP 177"/>
+      <entry name="bt1361" value="1" summary="ITU-R BT.1361-0"/>
+      <entry name="bt1361_conventional" value="1" summary="ITU-R BT.1361-0 conventional"/>
+      <entry name="bt1361_extended_colour_gamut" value="1"
+	     summary="ITU-R BT.1361-0 extended colour gamut system (historical)"/>
+      <entry name="bt470_6_m" value="4" summary="ITU-R BT.470-6 System M (historical)"/>
+      <entry name="bt470_6_b" value="5" summary="ITU-R BT.470-6 System B (historical)"/>
+      <entry name="bt470_6_g" value="5" summary="ITU-R BT.470-6 System G (historical)"/>
+      <entry name="bt601_7_625" value="5" summary="ITU-R BT.601-7 625"/>
+      <entry name="bt1358_625" value="5" summary="ITU-R BT.1358-0 625 (historical)"/>
+      <entry name="bt1700_625_pal" value="5" summary="ITU-R BT.1700-0 625 PAL"/>
+      <entry name="bt1700_625_secam" value="5" summary="ITU-R BT.1700-0 625 SECAM"/>
+      <entry name="bt601_7_525" value="6" summary="ITU-R BT.601-7 525"/>
+      <entry name="bt1358_1_525" value="6" summary="ITU-R BT.1358-1 525"/>
+      <entry name="bt1358_1_625" value="6" summary="ITU-R BT.1358-1 625 (historical)"/>
+      <entry name="bt1700_0_ntsc" value="6" summary="ITU-R BT.1700-0 NTSC"/>
+      <entry name="smpte_st_170" value="6" summary="SMPTE ST 170"/>
+      <entry name="smpte_st_240" value="7" summary="SMPTE ST 240"/>
+      <entry name="generic_film" value="8" summary="Generic film"/>
+      <entry name="bt2020_2" value="9" summary="ITU-R BT.2020-2"/>
+      <entry name="bt2100_2" value="9" summary="ITU-R BT.2100-2"/>
+      <entry name="smpte_st_428_1" value="10" summary="SMPTE ST 428-1"/>
+      <entry name="smpte_rp_431_2" value="11" summary="SMPTE RP 431-2"/>
+      <entry name="smpte_eg_432_1" value="12" summary="SMPTE EG 432-1"/>
     </enum>
 
     <enum name="whitepoint_names">
@@ -103,85 +94,6 @@
       <entry name="bad_enum" value="1" summary="bad value given as a well-known name"/>
       <entry name="bad_param" value="2" summary="bad parameter value"/>
     </enum>
-
-    <request name="create_color_space_from_icc">
-      <description summary="create a color space object from ICC profiles">
-	Create a color space object from an ICC profile. This request returns
-	a zwp_color_space_creator_v1 object which either returns an error
-	or the successfully created zwp_color_space_v1 object.
-
-	The description of the color space to create is sent in the form of an
-	ICC profile as a file descriptor in the argument icc.
-
-	The fd must be seekable and the maximum size of the ICC profile is 4 MB.
-	Violating these requirements will raise an icc_fd protocol error. A
-	compositor must not modify the contents of the file, and the fd may be
-	sealed for writes and size changes.
-
-	The file contents must represent a valid ICC profile.
-	The ICC profile version must be 2 or 4, it must be a 3 channel profile
-	and the class must be 'input', 'output', 'abstract' or 'display'.
-	Violating these requirements will not result in a protocol error but
-	raise the zwp_color_space_creator_v1.error event.
-
-	See the zwp_color_space_v1 and zwp_color_space_creator_v1 interface for
-	more details about the created object.
-
-	See the specification from International Color Consortium for more
-	details about ICC profiles, also known as ISO 15076-1:2010.
-      </description>
-      <arg name="id" type="new_id" interface="zwp_color_space_creator_v1"/>
-      <arg name="icc" type="fd"/>
-    </request>
-
-    <request name="create_color_space_from_names">
-      <description summary="create a color space object from well-known names">
-	Create a color space object from well-known names. This request returns
-	a zwp_color_space_creator_v1 object which either returns an error
-	or the successfully created zwp_color_space_v1 object.
-
-	EOTF, chromaticity and whitepoint must not be unknown. Otherwise, or
-	if a given value is not listed in the enumeration, the protocol error
-	bad_enum is raised.
-
-	See the zwp_color_space_v1 and zwp_color_space_creator_v1 interface for
-	more details about the created object.
-      </description>
-      <arg name="id" type="new_id" interface="zwp_color_space_creator_v1"/>
-      <arg name="eotf" type="uint" enum="eotf_names" summary="EOTF"/>
-      <arg name="chromaticity" type="uint" enum="chromaticity_names" summary="chromaticity"/>
-      <arg name="whitepoint" type="uint" enum="whitepoint_names" summary="whitepoint"/>
-    </request>
-
-    <request name="create_color_space_from_params">
-      <description summary="create a color space object from parameters">
-	Create a color space object from parameters. This request returns
-	a zwp_color_space_creator_v1 object which either returns an error
-	or the successfully created zwp_color_space_v1 object.
-
-	EOTF must not be unknown. Otherwise, or if a given EOTF is not listed
-	in the enumeration, the protocol error bad_enum is raised.
-
-	The white point must be inside the triangle created by the red, green
-	and blue primaries. Otherwise the bad_param protocol error is raised.
-
-	All the chromaticity values are multiplied by 10000 to produce the
-	integers carried by the protocol.
-
-	See the zwp_color_space_v1 and zwp_color_space_creator_v1 interface for
-	more details about the created object.
-      </description>
-      <arg name="id" type="new_id" interface="zwp_color_space_creator_v1"/>
-      <arg name="eotf" type="uint" enum="eotf_names" summary="EOTF"/>
-      <arg name="primary_r_x" type="uint" summary="red primary X * 10000"/>
-      <arg name="primary_r_y" type="uint" summary="red primary Y * 10000"/>
-      <arg name="primary_g_x" type="uint" summary="green primary X * 10000"/>
-      <arg name="primary_g_y" type="uint" summary="green primary Y * 10000"/>
-      <arg name="primary_b_x" type="uint" summary="blue primary X * 10000"/>
-      <arg name="primary_b_y" type="uint" summary="blue primary Y * 10000"/>
-      <arg name="white_point_x" type="uint" summary="white point X * 10000"/>
-      <arg name="white_point_y" type="uint" summary="white point Y * 10000"/>
-    </request>
 
     <request name="get_color_management_output">
       <description summary="create a color management interface for a wl_output">
@@ -228,9 +140,9 @@
 	destroyed, the zwp_color_management_output_v1 object becomes inert.
     </description>
 
-    <event name="color_space_changed">
-      <description summary="color space changed">
-	The color_space_changed event is sent whenever the color space of the
+    <event name="image_description_changed">
+      <description summary="image description changed">
+	The image_description_changed event is sent whenever the image description of the
 	output changed, followed by one wl_output.done event common to
 	output events across all extensions.
 
@@ -238,53 +150,23 @@
       </description>
     </event>
 
-    <event name="extended_dynamic_range">
-      <description summary="output extended dynamic range">
-	This is both an initial event and sent whenever the value changed.
-	When the value changed, this event is followed by one wl_output.done
-	event common to output events across all extensions.
-
-	The extended dynamic range value describes how much dynamic range is
-	available relative to the SDR maximum white. EDR value is proportional
-	to luminance, and the luminance of black is used as the zero level.
-	A value of 1.0 means that the the display can not display
-	anything brighter than SDR maximum white. A value of 3.0 means that the
-	SDR maximum white is at one third of the highest luminance the display
-	can produce.
-
-	The absolute luminance of the SDR maximum white depends on the monitor
-	capabilities, the viewing conditions and the viewer personal
-	preferences. A such, it cannot be given a single value in cd/m².
-	Compositors using HDR video modes should allow users to control the the
-	SDR maximum white level which the output EDR value is calculated from.
-
-	The SDR maximum white is a relative reference luminance that allows
-	to tone-map content from different dynamic ranges into a single common
-	dynamic range for display.
-
-	The EDR value is multiplied by 1000 to produce the integer value
-	carried by the protocol.
-      </description>
-      <arg name="value" type="uint" summary="EDR value * 1000"/>
-    </event>
-
-    <request name="get_color_space">
-      <description summary="get the color space of the output">
-	This creates a new zwp_color_space_v1 object for the current color space
-	of the output. There always is exactly one color space active for an
-	output so the client should destroy the color space created by earlier
+    <request name="get_image_description">
+      <description summary="get the image description of the output">
+	This creates a new zwp_image_description_v1 object for the current image description 
+	of the output. There always is exactly one image description active for an
+	output so the client should destroy the image description created by earlier
 	invocations of this request. This request is usually sent as a reaction
-	to the color_space_changed event or when creating a
+	to the image_description_changed event or when creating a
 	zwp_color_management_output_v1 object.
 
-	The created zwp_color_space_v1 object preserves the color space
+	The created zwp_image_description_v1 object preserves the image_description
 	of the output from the time the object was created.
 
-	The resulting color space object allows get_information request.
+	The resulting image description object allows get_information request.
 
-	See the zwp_color_space_v1 interface for more details.
+	See the zwp_image_description_v1 interface for more details.
       </description>
-      <arg name="id" type="new_id" interface="zwp_color_space_v1"/>
+      <arg name="id" type="new_id" interface="zwp_image_description_v1"/>
     </request>
 
     <!-- TODO: HDR capabilities event -->
@@ -345,48 +227,9 @@
       <arg name="alpha_mode" type="uint" enum="alpha_mode" summary="alpha mode"/>
     </request>
 
-    <request name="set_extended_dynamic_range">
-      <description summary="set the content extended dynamic range">
-	Set the extended dynamic range (EDR) value for the underlying surface.
-	The EDR value is double buffered, and will be applied at the time
-	wl_surface.commit of the corresponding wl_surface is called.
-
-	The EDR value describes how much dynamic range is encoded relative to
-	the SDR maximum white. EDR value is proportional to luminance, using
-	the luminance of black as the zero level. A value of 1.0 means that the
-	SDR maximum white is the highest possible luminance of the surface. A
-	value of 3.0 means that the SDR maximum white is one third of the
-	highest possible luminance of the surface.
-
-	The color space attached to the surface can make the code values in the
-	buffer non-linear in regards to the luminance. The code value to produce
-	a third of the luminance of the biggest code value therefore might not
-	be one third of the biggest code value.
-
-	For the definition of the SDR maximum white on an output, see
-	zwp_color_management_output_v1.extended_dynamic_range. Content
-	producers are free to choose their SDR maximum white level. How it
-	shall be displayed depends on the monitor capabilities and the output
-	EDR value.
-
-	By default the EDR value is 1.0. The compositor will tone map the image
-	to match the EDR of each output the surface is shown on. The aim for
-	the EDR-EDR mapping is to produce a relative luminance mapping that
-	looks equally good regardless of the viewing conditions and the monitor
-	capabilities, assuming the output EDR value was tuned to the output
-	capabilities and the viewing environment. There might be performance
-	and image quality benefits from providing content readily tone mapped to
-	the EDR value of the output the surface is shown on.
-
-	The EDR value is multiplied by 1000 to produce the integer value
-	carried by the protocol.
-      </description>
-     <arg name="value" type="uint" summary="EDR value * 1000"/>
-    </request>
-
-    <request name="set_color_space">
-      <description summary="set the surface color space">
-	Set the color space of the underlying surface. The color space and
+    <request name="set_image_description">
+      <description summary="set the surface image description">
+	Set the image description of the underlying surface. The image description and
 	render intent are double buffered, and will be applied
 	at the time wl_surface.commit of the corresponding wl_surface is called.
 
@@ -397,48 +240,48 @@
 	By default, a surface is assumed to have the sRGB color space and an
 	arbitrary render intent.
 
-	If the color space of the surface matches the color space of an output
+	If the image description of the surface matches the image description of an output
 	it is shown on the performance and color accuracy might improve. To find
-	those color spaces the client can listen to the preferred_color_space or
+	those image descriptions the client can listen to the preferred_image_description or
 	the wl_surface.enter/leave events. This improvement may require using
-	the color space object created by
-	zwp_color_management_output_v1.get_color_space.
+	the image description object created by
+	zwp_color_management_output_v1.get_image_description.
       </description>
-      <arg name="color_space" type="object" interface="zwp_color_space_v1"/>
+      <arg name="image_description" type="object" interface="zwp_image_description_v1"/>
       <arg name="render_intent" type="uint" enum="render_intent" summary="render intent"/>
     </request>
 
-    <request name="set_default_color_space">
-      <description summary="set the surface color space to default">
-	This request sets the surface color space to the defaults, see
-	set_color_space. The setting will be applied at the time
+    <request name="set_default_image_description">
+      <description summary="set the surface image description to default">
+	This request sets the surface image description to the defaults, see
+	set_image_description. The setting will be applied at the time
 	wl_surface.commit of the corresponding wl_surface is called.
       </description>
     </request>
 
     <!-- TODO: HDR metadata request -->
 
-    <event name="preferred_color_space">
+    <event name="preferred_image_description">
       <description summary="output for color optimization">
-	The preferred_color_space event is sent when the compositor determines
-	or switches the output that implies the preferred color space. The
-	preferred color space is the one which likely has the most performance
+	The preferred_image_description event is sent when the compositor determines
+	or switches the output that implies the preferred image description. The
+	preferred image description is the one which likely has the most performance
 	and quality benefits if used by a client for its surface contents.
 
-	The event does not carry a zwp_color_space_v1 but a wl_output object.
-	The concrete zwp_color_space_v1 can be created by calling
-	zwp_color_management_output_v1.get_color_space on the output and
-	listening to zwp_color_management_output_v1.color_space_changed
+	The event does not carry a zwp_image_description_v1 but a wl_output object.
+	The concrete zwp_image_description_v1 can be created by calling
+	zwp_color_management_output_v1.get_image_description on the output and
+	listening to zwp_color_management_output_v1.image_description_changed
 	events.
 
 	As clients may bind to the same global wl_output multiple
 	times, this event is sent for each bound instance that matches
-	the preferred color space output. If a client has not bound to
+	the preferred image description output. If a client has not bound to
 	the right wl_output global at all, this event is not sent.
 
-	This is only a hint and clients can set any valid color space with
-	set_color_space but there might be performance and color accuracy
-	improvements by providing the surface in the preferred color space.
+	This is only a hint and clients can set any valid image description with
+	set_image_description but there might be performance and color accuracy
+	improvements by providing the surface in the preferred image description.
       </description>
       <arg name="output" type="object" interface="wl_output"/>
     </event>
@@ -449,45 +292,192 @@
 
 	When the last zwp_color_management_surface_v1 object for a wl_surface
 	is destroyed, the destruction will pend unsetting the wl_surface's
-	color space, render intent and alpha mode similar to set_color_space
+	image description, render intent and alpha mode similar to set_image_description
 	will pend a set.
       </description>
     </request>
   </interface>
 
-  <interface name="zwp_color_space_creator_v1" version="1">
-    <description summary="color space creator">
-	A zwp_color_space_creator_v1 object returns a created color space
-	or the error which occured during creation.
+  <interface name="zwp_image_description_creator_icc_v1" version="1">
+    <description summary="image description creator">
+	A zwp_image_description_creator_v1 object returns a created image_description or the error
+	which occurred during creation.
 
-	Once a zwp_color_space_creator_v1 object has delivered a 'created'
-	or 'error' event it is automatically destroyed.
+	This image description creator requires an ICC profile to create the object.
+
+	Once a zwp_image_description_creator_v1 object has delivered a 'created' or 'error'
+	event it is automatically destroyed.
+
     </description>
 
     <enum name="creation_error" bitfield="true">
-      <description summary="color space creation error">
-	Bitmask of errors which occured while trying to create a color space
+      <description summary="image description creation error">
+	Bitmask of errors which occured while trying to create an image description
       </description>
       <entry name="malformed_icc" value="0x1" summary="malformed ICC profile"/>
       <entry name="bad_icc" value="0x2" summary="ICC profile does not meet requirements"/>
-      <entry name="bad_primaries" value="0x4" summary="bad primaries"/>
-      <entry name="bad_whitepoint" value="0x8" summary="bad whitepoint"/>
     </enum>
+    <request name="create">
+      <description summary="Create the image description object using an ICC profile" >
+	Create a image description object based on icc profile. 
+      </description>
+    </request>
+    <request name="set_icc">
+      <description summary="Set the International Color Consortium profile">
+	Set of data that characterizes a color input or output device, or a color
+	space. The profiles can be used to translate between different color
+	encodings (allows us to transfer a given color data into another
+	devices native color encoding)
+
+	The fd must be seekable and the maximum size of the ICC profile is 4 MB.
+	Violating these requirements will raise an icc_fd protocol error. A
+	compositor must not modify the contents of the file, and the fd may be
+	sealed for writes and size changes.
+
+	The file contents must represent a valid ICC profile.
+	The ICC profile version must be 2 or 4, it must be a 3 channel profile
+	and the class must be 'input', 'output', 'abstract' or 'display'.
+	Violating these requirements will not result in a protocol error but
+	raise the zwp_image_description_creator_v1.error event.
+
+	See the specification from International Color Consortium for more
+	details about ICC profiles, also known as ISO 15076-1:2010.
+      </description>
+      <arg name="icc_profile" type="fd" summary="ICC profile"/>
+    </request>
 
     <event name="created">
-      <description summary="color space object created">
-	Delivers the successfully created color space.
-
-	The resulting color space object does not allow get_information request.
+      <description summary="">
+	Delivers the successfully created image description
       </description>
-      <arg name="id" type="new_id" interface="zwp_color_space_v1"/>
+      <arg name="image_description" type="new_id" interface="zwp_image_description_v1"/>
     </event>
-
-    <event name="error">
-      <description summary="color space creation failed">
-	This event is sent if the color space creation failed.
+    <event name="creation_error">
+      <description summary="">
+	This event is sent if the image_description creation failed.
       </description>
-      <arg name="error" type="uint" enum="creation_error" summary="error bitmask"/>
+      <arg name="creation_error" type="uint" enum="creation_error" summary="error bitmask"/>
+    </event>
+  </interface>
+
+  <interface name="zwp_image_description_creator_params_v1" version="1">
+    <description summary="image description creator">
+	A zwp_image_description_creator_params_v1 object returns a created image_description or the error
+	which occurred during creation.
+
+	This image description creator requires parameters to be constructed (CICP, Gamma and Color primaries etc)
+
+	Once a zwp_image_description_creator_params_v1 object has delivered a 'created' or 'error'
+	event it is automatically destroyed.
+
+    </description>
+    <enum name="error" bitfield="true">
+      <description summary="image description creation error">
+	Bitmask of errors which occured while trying to create a image description
+      </description>
+      <entry name="cicp_gamma" value="0x1" summary="CICP and Gamma TF are set"/>
+      <entry name="cicp_primaries" value="0x4" summary="CICP and custom primaries are set"/>
+    </enum>
+
+    <request name="create">
+      <description summary="Create the image description object using params" >
+	Create a image description object based on params. 
+      </description>
+    </request>
+
+    <request name="set_tf_cicp">
+      <description summary="Set the OETF or EOTF^-1" >
+	Sets the transfer characteristics of the source input
+	as described in Section 8.2 of the ITU-T H.273 spec
+
+	Either indicates the reference opto-electronic transfer characteristic
+	function of the source picture as a function of a source input linear
+	optical intensity input (Lc) with a nominal real-valued range of 0 to 1 or
+	indicates the inverse of the reference electro-optical transfer
+	characteristic function as a function of an output linear optical
+	intensity (Lo) with a nominal real-valued range of 0 to 1.
+
+	CICP uses 0 to 1 encoding range, which means that:
+		- Floating point reperesentations component in the range of [0.0, 1.0].
+		- Integer representation maps 0 to 0.0 and max value to 1 to 1.0.
+      </description>
+      <arg name="cicp_transfer_characteristics" type="uint" enum="cicp_transfer_characteristics_id" summary="Value from ITU-T H.273 Section 8.2"/>
+    </request>
+    <request name="set_tf_gamma">
+      <description summary="Set the Gamma curve">
+	Sets the transfer characteristics as a gamma curve.
+
+	Use decimal value to define the gamma (e.g. 22 for a 2.2 Gamma, 24 for a 2.4 Gamma, etc)
+
+      </description>
+      <arg name="gamma" type="uint" summary="The gamma type (2.2, 2.4 etc)"/>
+    </request>
+    <request name="set_primaries_cicp">
+      <description summary="Set the primaries from CICP ID">
+	Set the primaries using CICP ID (ID, as specified in ITU-T H.273 Table 2).
+
+      </description>
+      <arg name="cicp_color_primaries" type="uint" enum="cicp_color_primaries_id" summary="Values from ITU H.273 Section 8.1"/>
+    </request>
+    <request name="set_primaries">
+      <description summary="Set the color primaries">
+	Indicates the chromaticity coordinates of the source colour primaries in
+	terms of CIE 1931
+      </description>
+      <arg name="r_x" type="uint" summary="Red x * 10000"/>
+      <arg name="r_y" type="uint" summary="Red y * 10000"/>
+      <arg name="g_x" type="uint" summary="Green x * 10000"/>
+      <arg name="g_y" type="uint" summary="Green y * 10000"/>
+      <arg name="b_x" type="uint" summary="Blue x * 10000"/>
+      <arg name="b_y" type="uint" summary="Blue y * 10000"/>
+      <arg name="w_x" type="uint" summary="White x * 10000"/>
+      <arg name="w_y" type="uint" summary="White y * 10000"/>
+    </request>
+    <request name="set_extended_dynamic_range">
+      <description summary="set the content extended dynamic range">
+       The EDR value describes how much dynamic range is encoded relative to
+       the SDR maximum white. EDR value is proportional to luminance, using
+       the luminance of black as the zero level. A value of 1.0 means that the
+       SDR maximum white is the highest possible luminance of the surface. A
+       value of 3.0 means that the SDR maximum white is one third of the
+       highest possible luminance of the surface.
+
+       The image description attached to the surface can make the code values in the
+       buffer non-linear in regards to the luminance. The code value to produce
+       a third of the luminance of the biggest code value therefore might not
+       be one third of the biggest code value.
+
+       For the definition of the SDR maximum white on an output, see
+       extended_dynamic_range on zwp_color_management_output_v1.get_image_description.
+       Content producers are free to choose their SDR maximum white level. How it
+       shall be displayed depends on the monitor capabilities and the output
+       EDR value.
+
+       By default the EDR value is 1.0. The compositor will tone map the image
+       to match the EDR of each output the surface is shown on. The aim for
+       the EDR-EDR mapping is to produce a relative luminance mapping that
+       looks equally good regardless of the viewing conditions and the monitor
+       capabilities, assuming the output EDR value was tuned to the output
+       capabilities and the viewing environment. There might be performance
+       and image quality benefits from providing content readily tone mapped to
+       the EDR value of the output the surface is shown on.
+
+       The EDR value is multiplied by 1000 to produce the integer value
+       carried by the protocol.
+      </description>
+     <arg name="value" type="uint" summary="EDR value * 1000"/>
+    </request>
+    <event name="created">
+      <description summary="">
+	Delivers the successfully created image description
+      </description>
+      <arg name="image_description" type="new_id" interface="zwp_image_description_v1"/>
+    </event>
+    <event name="error">
+      <description summary="">
+	This event is sent if the image_description creation failed.
+      </description>
+      <arg name="error" type="uint" enum="error" summary="error bitmask"/>
     </event>
   </interface>
 
@@ -517,39 +507,53 @@
 	versions are defined by the advertised zwp_color_manager_v1 in
 	wl_registry.
     </description>
+     <request name="destroy" type="destructor">
+      <description summary="destroy the color space">
+	Destroy the zwp_color_space_v1 object.
 
-    <enum name="error">
-      <entry name="no_information" value="0" summary="get_information disallowed"/>
-    </enum>
+	Destroying the zwp_color_space_v1 which is active on a surface or an
+	output does not change the color space of those objects.
+      </description>
+     </request>
+  </interface>
+
+  <interface name="zwp_image_description_v1" version="1">
+    <description summary="image description">
+	image description that can be attached to a surface
+	(zwp_color_management_surface_v1.set_image_description) and provide
+	information regarding the type of ICC profile, color primaries,
+	cicp primaries, and gamma that are being associated with the surface.
+
+	The image description can be attached to a surface
+	(zwp_color_management_surface_v1.set_image_description). It may provide
+	information like the ICC profile, gamma, primaries, etc.
+
+	Once created and regardless of how it was created, a zwp_image_description_v1
+	object always refers to one fixed image description.
+
+	The client can create a zwp_image_description_v1 object with
+	zwp_color_manager_v1 requests or from an output by calling
+	zwp_color_management_output_v1.get_image_description.
+    </description>
 
     <request name="get_information">
-      <description summary="get information about the color space">
+      <description summary="get information about the image description">
 	As a reply to this request, the compositor will send all available
-	information events describing this color space object and finally
+	information events describing this image description object and finally
 	the 'done' event. Other extensions may define more events to be sent
 	before 'done'.
 
-	This request is allowed only on zwp_color_space_v1 objects where the
-	message that created the object specifies that get_information is
-	allowed. Otherwise protocol error no_information is raised.
-
 	Every get_information request on the same object will always return the
 	exact same data.
-
-	See zwp_color_management_output_v1.get_color_space and
-	zwp_color_space_creator_v1.created.
       </description>
     </request>
 
     <event name="icc_file">
       <description summary="ICC profile describing the color space">
-	This event may be sent only as a response to
-	zwp_color_space_v1.get_information.
-
 	The icc argument provides a file descriptor to the client which can be
 	memory-mapped to provide the ICC profile describing the color space.
 	The fd must be mapped with MAP_PRIVATE and read-only by the client.
-
+	
 	Compositors should send this event always when information is requested.
 	ICC profiles provide the common foundation which all color managed
 	clients may rely on.
@@ -558,42 +562,77 @@
       <arg name="icc_size" type="uint" summary="ICC profile size, in bytes"/>
     </event>
 
-    <event name="names">
-      <description summary="well-known names of a color space">
-	This event may be sent only as a response to
-	zwp_color_space_v1.get_information.
+    <event name="extended_dynamic_range">
+      <description summary="output extended dynamic range">
+	The extended dynamic range value describes how much dynamic range is
+	available relative to the SDR maximum white. EDR value is proportional
+	to luminance, and the luminance of black is used as the zero level.
+	A value of 1.0 means that the the display can not display
+	anything brighter than SDR maximum white. A value of 3.0 means that the
+	SDR maximum white is at one third of the highest luminance the display
+	can produce.
 
-	EOTF, chromaticity and whitepoint contain well-known names of those
-	properties if available and unknown otherwise.
+	The absolute luminance of the SDR maximum white depends on the monitor
+	capabilities, the viewing conditions and the viewer personal
+	preferences. A such, it cannot be given a single value in cd/m².
+	Compositors using HDR video modes should allow users to control the the
+	SDR maximum white level which the output EDR value is calculated from.
 
-	Compositors should not assume that all clients can understand these
-	names. The names are provided for client convenience. If a client
-	understands the name triplet, it may ignore other information about
-	the color space, the ICC profile for example.
+	The SDR maximum white is a relative reference luminance that allows
+	to tone-map content from different dynamic ranges into a single common
+	dynamic range for display.
+
+	The EDR value is multiplied by 1000 to produce the integer value
+	carried by the protocol.
       </description>
-      <arg name="eotf" type="uint" enum="zwp_color_manager_v1.eotf_names" summary="EOTF"/>
-      <arg name="chromaticity" type="uint" enum="zwp_color_manager_v1.chromaticity_names" summary="chromaticity"/>
-      <arg name="whitepoint" type="uint" enum="zwp_color_manager_v1.whitepoint_names" summary="whitepoint"/>
+      <arg name="value" type="uint" summary="EDR value * 1000"/>
     </event>
 
-    <event name="done">
-      <description summary="end of color space information">
-	This event may be sent only as a response to
-	zwp_color_space_v1.get_information.
-
-	This signifies that all color space information events have been
-	delivered for the object.
+    <event name="primaries">
+      <description summary="primaries set for the image description">
+	This event provides the primaries that were used for the image description
       </description>
+      <arg name="r_x" type="uint" summary="Red x"/>
+      <arg name="r_y" type="uint" summary="Red y"/>
+      <arg name="g_x" type="uint" summary="Green x"/>
+      <arg name="g_y" type="uint" summary="Green y"/>
+      <arg name="b_x" type="uint" summary="Blue x"/>
+      <arg name="b_y" type="uint" summary="Blue y"/>
+      <arg name="w_x" type="uint" summary="White x"/>
+      <arg name="w_y" type="uint" summary="White y"/>
+    </event>
+    <event name="primaries_cicp">
+      <description summary="return CICP ID set for the image description">
+	This event provides the CICP ID that was used for the primaries.
+	Only sent if the image description has CICP defined primaries
+      </description>
+      <arg name="cicp_color_primaries" type="uint" summary="CICP ID"/>
+    </event>
+
+    <event name="tf_cicp">
+      <description summary="return cicp tf set for the image description">
+	This event provides the cicp TF that was set
+	Only sent if the image description has cicp TF
+      </description>
+      <arg name="tf_cicp" type="uint" summary="cicp transfer function"/>
+    </event>
+    <event name="gamma">
+      <description summary="return gamma set for the image description">
+	This event provides the gamma type that was set
+	Only sent if the image description has gamma sets
+      </description>
+      <arg name="gamma" type="uint" summary="The gamma type (2.2, 2.4 etc)"/>
     </event>
 
     <request name="destroy" type="destructor">
-      <description summary="destroy the color space">
-	Destroy the zwp_color_space_v1 object.
+      <description summary="destroy the image description">
+	Destroy the zwp_image_description_v1 object.
+	Destroying the zwp_image_description_v1 which is active on a surface or an
+	output does not change the image description of those objects.
 
-	Destroying the zwp_color_space_v1 which is active on a surface or an
-	output does not change the color space of those objects.
       </description>
     </request>
   </interface>
+
 
 </protocol>
