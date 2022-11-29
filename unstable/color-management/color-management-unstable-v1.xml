@@ -74,21 +74,6 @@
       <entry name="smpte_eg_432_1" value="12" summary="SMPTE EG 432-1"/>
     </enum>
 
-    <enum name="whitepoint_names">
-      <description summary="well-known whitepoint names">
-	Names that describe well-known whitepoints.
-
-	A compositor must support all of these based on the protocol interface
-	version.
-      </description>
-      <!-- TODO Whitepoints -->
-      <!-- <entry name="d55" value="" summary="D55 whitepoint"/> -->
-      <entry name="unknown" value="0" summary="unknown whitepoint"/>
-      <entry name="dci" value="1" summary="DCI whitepoint"/>
-      <entry name="d50" value="2" summary="D50 whitepoint"/>
-      <entry name="d65" value="3" summary="D65 whitepoint"/>
-    </enum>
-
     <enum name="error">
       <entry name="icc_fd" value="0" summary="given ICC fd has bad properties"/>
       <entry name="bad_enum" value="1" summary="bad value given as a well-known name"/>
