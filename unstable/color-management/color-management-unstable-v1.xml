@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <protocol name="color_management_unstable_v1">
-
   <copyright>
     Copyright 2019 Sebastian Wick
     Copyright 2019 Erwin Burema
@@ -37,16 +36,18 @@
   <interface name="zwp_color_manager_v1" version="1">
     <description summary="color manager singleton">
         A global interface used for getting color management surface and color
-        management output objects as well as creating image description objects from
-        ICC profiles, parameters, or enumerated names.
+        management output objects as well as creating image description objects
+        from ICC profiles, parameters, or enumerated names.
     </description>
 
     <enum name="cicp_color_primaries_id">
       <description summary="cicp_color_primaries_map">
         Well known chromaticity names
 
-        ColourPrimaries as defined in Rec ITU-T H.273 Coding-independent code points for video signal type identification.
+        ColourPrimaries as defined in Rec ITU-T H.273 Coding-independent code
+        points for video signal type identification.
       </description>
+
       <entry name="bt709_6" value="1" summary="ITU-R BT.709-6"/>
       <entry name="smpte_rp_177" value="1" summary="SMPTE RP 177"/>
       <entry name="bt1361" value="1" summary="ITU-R BT.1361-0"/>
@@ -87,6 +88,7 @@
 
         See the zwp_color_management_output_v1 interface for more details.
       </description>
+
       <arg name="id" type="new_id" interface="zwp_color_management_output_v1"/>
       <arg name="output" type="object" interface="wl_output"/>
     </request>
@@ -98,6 +100,7 @@
 
         See the zwp_color_management_surface_v1 interface for more details.
       </description>
+
       <arg name="id" type="new_id" interface="zwp_color_management_surface_v1"/>
       <arg name="surface" type="object" interface="wl_surface"/>
     </request>
@@ -112,17 +115,17 @@
 
   <interface name="zwp_color_management_output_v1" version="1">
     <description summary="output color properties">
-        A zwp_color_management_output_v1 describes the color properties of an
-        output.
+      A zwp_color_management_output_v1 describes the color properties of an
+      output.
 
-        When zwp_color_management_output_v1 object is created, it will send
-        its initial events followed by a wl_output.done event. When creating
-        wl_output and its extension objects, use a final wl_display.sync to
-        guarantee that all output events have been received across all
-        extensions.
+      When zwp_color_management_output_v1 object is created, it will send
+      its initial events followed by a wl_output.done event. When creating
+      wl_output and its extension objects, use a final wl_display.sync to
+      guarantee that all output events have been received across all
+      extensions.
 
-        If the wl_output associated with the zwp_color_management_output_v1 is
-        destroyed, the zwp_color_management_output_v1 object becomes inert.
+      If the wl_output associated with the zwp_color_management_output_v1 is
+      destroyed, the zwp_color_management_output_v1 object becomes inert.
     </description>
 
     <event name="image_description_changed">
@@ -151,6 +154,7 @@
 
         See the zwp_image_description_v1 interface for more details.
       </description>
+
       <arg name="id" type="new_id" interface="zwp_image_description_v1"/>
     </request>
 
@@ -181,6 +185,7 @@
 
         See the ICC specification for more details about rendering intent.
       </description>
+
       <entry name="perceptual" value="0" summary="perceptual"/>
       <entry name="relative" value="1" summary="media-relative colorimetric"/>
       <entry name="saturation" value="2" summary="saturation"/>
@@ -194,6 +199,7 @@
         If pre-multiplied, the linear alpha value is already multiplied with the
         (non-linear) color channel code values in the color channels.
       </description>
+
       <entry name="straight" value="0" summary="alpha is independent from color channels"/>
       <entry name="premultiplied" value="1" summary="alpha is pre-multiplied into color channels"/>
     </enum>
@@ -209,6 +215,7 @@
 
         By default, a surface is assumed to have pre-multiplied alpha.
       </description>
+
       <arg name="alpha_mode" type="uint" enum="alpha_mode" summary="alpha mode"/>
     </request>
 
@@ -232,6 +239,7 @@
         the image description object created by
         zwp_color_management_output_v1.get_image_description.
       </description>
+
       <arg name="image_description" type="object" interface="zwp_image_description_v1"/>
       <arg name="render_intent" type="uint" enum="render_intent" summary="render intent"/>
     </request>
@@ -268,6 +276,7 @@
         set_image_description but there might be performance and color accuracy
         improvements by providing the surface in the preferred image description.
       </description>
+
       <arg name="output" type="object" interface="wl_output"/>
     </event>
 
@@ -292,13 +301,13 @@
 
         Once a zwp_image_description_creator_v1 object has delivered a 'created' or 'error'
         event it is automatically destroyed.
-
     </description>
 
     <enum name="creation_error" bitfield="true">
       <description summary="image description creation error">
         Bitmask of errors which occured while trying to create an image description
       </description>
+
       <entry name="malformed_icc" value="0x1" summary="malformed ICC profile"/>
       <entry name="bad_icc" value="0x2" summary="ICC profile does not meet requirements"/>
     </enum>
@@ -330,6 +339,7 @@
         See the specification from International Color Consortium for more
         details about ICC profiles, also known as ISO 15076-1:2010.
       </description>
+
       <arg name="icc_profile" type="fd" summary="ICC profile"/>
     </request>
 
@@ -337,6 +347,7 @@
       <description summary="">
         Delivers the successfully created image description
       </description>
+
       <arg name="image_description" type="new_id" interface="zwp_image_description_v1"/>
     </event>
 
@@ -344,9 +355,9 @@
       <description summary="">
         This event is sent if the image_description creation failed.
       </description>
+
       <arg name="creation_error" type="uint" enum="creation_error" summary="error bitmask"/>
     </event>
-
   </interface>
 
   <interface name="zwp_image_description_creator_params_v1" version="1">
@@ -364,6 +375,7 @@
       <description summary="image description creation error">
         Bitmask of errors which occured while trying to create a image description
       </description>
+
       <entry name="cicp_gamma" value="0x1" summary="CICP and Gamma TF are set"/>
       <entry name="cicp_primaries" value="0x4" summary="CICP and custom primaries are set"/>
     </enum>
@@ -390,29 +402,34 @@
                 - Floating point reperesentations component in the range of [0.0, 1.0].
                 - Integer representation maps 0 to 0.0 and max value to 1 to 1.0.
       </description>
+
       <arg name="cicp_transfer_characteristics" type="uint" enum="cicp_transfer_characteristics_id" summary="Value from ITU-T H.273 Section 8.2"/>
     </request>
+
     <request name="set_tf_gamma">
       <description summary="Set the Gamma curve">
         Sets the transfer characteristics as a gamma curve.
 
         Use decimal value to define the gamma (e.g. 22 for a 2.2 Gamma, 24 for a 2.4 Gamma, etc)
-
       </description>
+
       <arg name="gamma" type="uint" summary="The gamma type (2.2, 2.4 etc)"/>
     </request>
+
     <request name="set_primaries_cicp">
       <description summary="Set the primaries from CICP ID">
         Set the primaries using CICP ID (ID, as specified in ITU-T H.273 Table 2).
-
       </description>
+
       <arg name="cicp_color_primaries" type="uint" enum="cicp_color_primaries_id" summary="Values from ITU H.273 Section 8.1"/>
     </request>
+
     <request name="set_primaries">
       <description summary="Set the color primaries">
         Indicates the chromaticity coordinates of the source colour primaries in
         terms of CIE 1931
       </description>
+
       <arg name="r_x" type="uint" summary="Red x * 10000"/>
       <arg name="r_y" type="uint" summary="Red y * 10000"/>
       <arg name="g_x" type="uint" summary="Green x * 10000"/>
@@ -422,6 +439,7 @@
       <arg name="w_x" type="uint" summary="White x * 10000"/>
       <arg name="w_y" type="uint" summary="White y * 10000"/>
     </request>
+
     <request name="set_extended_dynamic_range">
       <description summary="set the content extended dynamic range">
         The EDR value describes how much dynamic range is encoded relative to
@@ -454,18 +472,23 @@
         The EDR value is multiplied by 1000 to produce the integer value
         carried by the protocol.
       </description>
-     <arg name="value" type="uint" summary="EDR value * 1000"/>
+
+      <arg name="value" type="uint" summary="EDR value * 1000"/>
     </request>
+
     <event name="created">
       <description summary="">
         Delivers the successfully created image description
       </description>
+
       <arg name="image_description" type="new_id" interface="zwp_image_description_v1"/>
     </event>
+
     <event name="error">
       <description summary="">
         This event is sent if the image_description creation failed.
       </description>
+
       <arg name="error" type="uint" enum="error" summary="error bitmask"/>
     </event>
   </interface>
@@ -522,6 +545,7 @@
         ICC profiles provide the common foundation which all color managed
         clients may rely on.
       </description>
+
       <arg name="icc" type="fd" summary="ICC profile file descriptor"/>
       <arg name="icc_size" type="uint" summary="ICC profile size, in bytes"/>
     </event>
@@ -549,6 +573,7 @@
         The EDR value is multiplied by 1000 to produce the integer value
         carried by the protocol.
       </description>
+
       <arg name="value" type="uint" summary="EDR value * 1000"/>
     </event>
 
@@ -556,6 +581,7 @@
       <description summary="primaries set for the image description">
         This event provides the primaries that were used for the image description
       </description>
+
       <arg name="r_x" type="uint" summary="Red x"/>
       <arg name="r_y" type="uint" summary="Red y"/>
       <arg name="g_x" type="uint" summary="Green x"/>
@@ -565,11 +591,13 @@
       <arg name="w_x" type="uint" summary="White x"/>
       <arg name="w_y" type="uint" summary="White y"/>
     </event>
+
     <event name="primaries_cicp">
       <description summary="return CICP ID set for the image description">
         This event provides the CICP ID that was used for the primaries.
         Only sent if the image description has CICP defined primaries
       </description>
+
       <arg name="cicp_color_primaries" type="uint" summary="CICP ID"/>
     </event>
 
@@ -578,13 +606,16 @@
         This event provides the cicp TF that was set
         Only sent if the image description has cicp TF
       </description>
+
       <arg name="tf_cicp" type="uint" summary="cicp transfer function"/>
     </event>
+
     <event name="gamma">
       <description summary="return gamma set for the image description">
         This event provides the gamma type that was set
         Only sent if the image description has gamma sets
       </description>
+
       <arg name="gamma" type="uint" summary="The gamma type (2.2, 2.4 etc)"/>
     </event>
 
@@ -593,9 +624,7 @@
         Destroy the zwp_image_description_v1 object.
         Destroying the zwp_image_description_v1 which is active on a surface or an
         output does not change the image description of those objects.
-
       </description>
     </request>
   </interface>
-
 </protocol>
