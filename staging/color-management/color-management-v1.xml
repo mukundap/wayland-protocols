@@ -4,7 +4,7 @@
     Copyright 2019 Sebastian Wick
     Copyright 2019 Erwin Burema
     Copyright 2020 AMD
-    Copyright 2020 Collabora, Ltd.
+    Copyright 2020, 2022 Collabora, Ltd.
 
     Permission is hereby granted, free of charge, to any person obtaining a
     copy of this software and associated documentation files (the "Software"),
@@ -27,10 +27,26 @@
   </copyright>
 
   <description summary="color management protocol">
+    The aim of the color management extension is to allow clients to know
+    the color properties of outputs, and to tell the compositor about the color
+    properties of their content on surfaces. Doing this enables a compositor
+    to perform automatic color management of content for different outputs
+    according to how content is intended to look like.
+
+    The color properties are represented as an image description object which
+    is immutable after it has been created. A wl_output always has an
+    associated image description that clients can observe. A wl_surface
+    always has an associated preferred image description as a hint chosen by
+    the compositor that clients can also observe. Clients can set an image
+    description on a wl_surface to denote the color characteristics of the
+    surface contents.
+
     An image description includes SDR and HDR colorimetry and encoding, HDR
-    metadata, and viewing environment parameters. This extension allows a
-    client to set an image description for its windows, and get the image
-    description of outputs.
+    metadata, and viewing environment parameters. An image description does
+    not include the properties set through color-representation extension.
+    It is expected that the color-representation extension is used in
+    conjunction with the color management extension when necessary,
+    particularly with the YUV family of pixel formats.
   </description>
 
   <interface name="wp_color_manager_v1" version="1">
