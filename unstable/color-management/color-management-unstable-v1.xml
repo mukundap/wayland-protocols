@@ -470,42 +470,6 @@
     </event>
   </interface>
 
-  <interface name="zwp_color_space_v1" version="1">
-    <description summary="color space">
-      Refers to a color space which can be attached to a surface
-      (zwp_color_management_surface_v1.set_color_space). It may provide
-      information like the ICC profile and the well-known names to allow
-      clients to know the color space and do color transformations of their
-      own.
-
-      Once created and regardless of how it was created, a zwp_color_space_v1
-      object always refers to one fixed color space.
-
-      The client can create a zwp_color_space_v1 object with
-      zwp_color_manager_v1 requests or from an output by calling
-      zwp_color_management_output_v1.get_color_space.
-
-      Other extensions may define more zwp_color_space_v1 factory interfaces.
-      Those interfaces must explicitly specify the interface version for the
-      object created, otherwise versioning zwp_color_space_v1 correctly
-      becomes impossible. Using a 'new_id' argument without 'interface'
-      attribute defined in XML forces code generators to add two explicit
-      arguments: interface and version. Version is the explicit version
-      number needed, and interface should be required to be
-      "zwp_color_space_v1". The compositor supported zwp_color_space_v1
-      versions are defined by the advertised zwp_color_manager_v1 in
-      wl_registry.
-    </description>
-     <request name="destroy" type="destructor">
-      <description summary="destroy the color space">
-        Destroy the zwp_color_space_v1 object.
-
-        Destroying the zwp_color_space_v1 which is active on a surface or an
-        output does not change the color space of those objects.
-      </description>
-     </request>
-  </interface>
-
   <interface name="zwp_image_description_v1" version="1">
     <description summary="image description">
       image description that can be attached to a surface
@@ -523,6 +487,17 @@
       The client can create a zwp_image_description_v1 object with
       zwp_color_manager_v1 requests or from an output by calling
       zwp_color_management_output_v1.get_image_description.
+
+      Other extensions may define more zwp_image_description_v1 factory interfaces.
+      Those interfaces must explicitly specify the interface version for the
+      object created, otherwise versioning zwp_image_description_v1 correctly
+      becomes impossible. Using a 'new_id' argument without 'interface'
+      attribute defined in XML forces code generators to add two explicit
+      arguments: interface and version. Version is the explicit version
+      number needed, and interface should be required to be
+      "zwp_image_description_v1". The compositor supported zwp_image_description_v1
+      versions are defined by the advertised zwp_color_manager_v1 in
+      wl_registry.
     </description>
 
     <request name="get_information">
