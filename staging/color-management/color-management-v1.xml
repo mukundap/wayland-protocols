@@ -51,9 +51,19 @@
 
   <interface name="wp_color_manager_v1" version="1">
     <description summary="color manager singleton">
-        A global interface used for getting color management surface and color
-        management output objects as well as creating image description objects
-        from ICC profiles, parameters, or enumerated names.
+      A global interface used for getting color management extensions for
+      wl_surface and wl_output objects. These extension interfaces allow
+      getting the image description of outputs and setting the image
+      description of surfaces.
+
+      The compositor advertised version of this interface also defines the
+      maximum supported version of wp_image_description_v1 objects in the
+      compositor.
+
+      The interfaces to allow clients to create custom wp_image_description_v1
+      objects shall be advertised through other globals, and are optional for
+      a compositor implementation, wp_image_description_factory_icc_v1 and
+      wp_image_description_factory_parametric_v1 for example.
     </description>
 
     <enum name="cicp_color_primaries_id">
