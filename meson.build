@@ -33,7 +33,6 @@ unstable_protocols = {
 	'xdg-output': ['v1'],
 	'xdg-shell': ['v5', 'v6'],
 	'xwayland-keyboard-grab': ['v1'],
-	'color-management': ['v1'],
 }
 
 staging_protocols = {
@@ -46,6 +45,7 @@ staging_protocols = {
 	'tearing-control': ['v1'],
 	'xdg-activation': ['v1'],
 	'xwayland-shell': ['v1'],
+	'color-management': ['v1'],
 }
 
 protocol_files = []
