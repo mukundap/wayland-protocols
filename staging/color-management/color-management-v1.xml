@@ -318,72 +318,75 @@
     </request>
   </interface>
 
-  <interface name="wp_image_description_creator_icc_v1" version="1">
-    <description summary="image description creator">
-        A wp_image_description_creator_v1 object returns a created image_description or the error
-        which occurred during creation.
+  <interface name="wp_image_description_factory_icc_v1" version="1">
+    <description summary="image description factory for ICC files">
+      A global interface advertising the capability of creating image
+      description objects from International Color Consortium (ICC) profile
+      files.
 
-        This image description creator requires an ICC profile to create the object.
-
-        Once a wp_image_description_creator_v1 object has delivered a 'created' or 'error'
-        event it is automatically destroyed.
+      Clients use this interface when they have an ICC file describing their
+      future surface contents and create a wp_image_description_v1 object
+      that can then be set on a wl_surface through
+      wp_color_management_surface_v1.
     </description>
 
-    <enum name="creation_error" bitfield="true">
-      <description summary="image description creation error">
-        Bitmask of errors which occured while trying to create an image description
-      </description>
+    <enum name="error">
+      <description summary="protocol errors"/>
 
-      <entry name="malformed_icc" value="0x1" summary="malformed ICC profile"/>
-      <entry name="bad_icc" value="0x2" summary="ICC profile does not meet requirements"/>
+      <entry name="bad_fd" value="0" summary="fd not seekable and readable"/>
+      <entry name="bad_size" value="1" summary="no or too much data"/>
+      <entry name="bad_object" value="2" summary="invalid interface or version for new_id"/>
     </enum>
 
-    <request name="create">
-      <description summary="Create the image description object using an ICC profile" >
-        Create a image description object based on icc profile.
+    <request name="destroy" type="destructor">
+      <description summary="destroy factory">
+        Destroys the factory interface object. Destroying does not affect any
+        other protocol objects in any way.
       </description>
     </request>
 
-    <request name="set_icc">
-      <description summary="Set the International Color Consortium profile">
-        Set of data that characterizes a color input or output device, or a color
-        space. The profiles can be used to translate between different color
-        encodings (allows us to transfer a given color data into another
-        devices native color encoding)
+    <request name="create">
+      <description summary="create an image description from an ICC profile">
+        Creates an image description object from ICC profile data.
 
-        The fd must be seekable and the maximum size of the ICC profile is 4 MB.
-        Violating these requirements will raise an icc_fd protocol error. A
-        compositor must not modify the contents of the file, and the fd may be
-        sealed for writes and size changes.
+        The data shall be found through the given fd at the given offset,
+        having the given length. The fd must seekable and readable. Violating
+        these requirements raises the bad_fd protocol error.
 
-        The file contents must represent a valid ICC profile.
+        The maximum size of the ICC profile is 4 MB. If length is greater
+        than that or zero, the protocol error bad_size is raised.
+
+        A compositor shall read the data immediately when it processes this
+        request. Therefore a wl_display.sync after this request is enough to
+        ensure a client that the compositor has finished reading.
+
+        A compositor shall not modify the contents of the file, and the fd may
+        be sealed for writes and size changes. The client must ensure to its
+        best ability that the data does not change while the compositor is
+        reading it.
+
+        The argument image_description must have the interface
+        "wp_image_description_v1" and a version supported by the compositor.
+        Otherwise the protocol error bad_object is raised.
+        The compositor shall support all versions from 1 up to and including
+        the version number of wp_color_manager_v1 global interface.
+
+        The data must represent a valid ICC profile.
         The ICC profile version must be 2 or 4, it must be a 3 channel profile
         and the class must be 'input', 'output', 'abstract' or 'display'.
         Violating these requirements will not result in a protocol error but
-        raise the wp_image_description_creator_v1.error event.
+        will immediately send the wp_image_description_v1.failed event with
+        the 'unsupported' cause.
 
         See the specification from International Color Consortium for more
         details about ICC profiles, also known as ISO 15076-1:2010.
       </description>
 
       <arg name="icc_profile" type="fd" summary="ICC profile"/>
+      <arg name="offset" type="uint" summary="byte offset in fd to start of ICC data"/>
+      <arg name="length" type="uint" summary="length of ICC data in bytes"/>
+      <arg name="image_description" type="new_id" summary="wp_image_description_v1"/>
     </request>
-
-    <event name="created">
-      <description summary="">
-        Delivers the successfully created image description
-      </description>
-
-      <arg name="image_description" type="new_id" interface="wp_image_description_v1"/>
-    </event>
-
-    <event name="creation_error">
-      <description summary="">
-        This event is sent if the image_description creation failed.
-      </description>
-
-      <arg name="creation_error" type="uint" enum="creation_error" summary="error bitmask"/>
-    </event>
   </interface>
 
   <interface name="wp_image_description_creator_params_v1" version="1">
