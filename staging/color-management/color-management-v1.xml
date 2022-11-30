@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<protocol name="color_management_unstable_v1">
+<protocol name="color_management_v1">
   <copyright>
     Copyright 2019 Sebastian Wick
     Copyright 2019 Erwin Burema
@@ -33,7 +33,7 @@
     description of outputs.
   </description>
 
-  <interface name="zwp_color_manager_v1" version="1">
+  <interface name="wp_color_manager_v1" version="1">
     <description summary="color manager singleton">
         A global interface used for getting color management surface and color
         management output objects as well as creating image description objects
@@ -83,49 +83,49 @@
 
     <request name="get_color_management_output">
       <description summary="create a color management interface for a wl_output">
-        This creates a new zwp_color_management_output_v1 object for the
+        This creates a new wp_color_management_output_v1 object for the
         given wl_output.
 
-        See the zwp_color_management_output_v1 interface for more details.
+        See the wp_color_management_output_v1 interface for more details.
       </description>
 
-      <arg name="id" type="new_id" interface="zwp_color_management_output_v1"/>
+      <arg name="id" type="new_id" interface="wp_color_management_output_v1"/>
       <arg name="output" type="object" interface="wl_output"/>
     </request>
 
     <request name="get_color_management_surface">
       <description summary="create a color management interface for a wl_surface">
-        This creates a new color zwp_color_management_surface_v1 object for the
+        This creates a new color wp_color_management_surface_v1 object for the
         given wl_surface.
 
-        See the zwp_color_management_surface_v1 interface for more details.
+        See the wp_color_management_surface_v1 interface for more details.
       </description>
 
-      <arg name="id" type="new_id" interface="zwp_color_management_surface_v1"/>
+      <arg name="id" type="new_id" interface="wp_color_management_surface_v1"/>
       <arg name="surface" type="object" interface="wl_surface"/>
     </request>
 
     <request name="destroy" type="destructor">
       <description summary="destroy the color manager">
-        Destroy the zwp_color_manager_v1 object. This does not affect any other
+        Destroy the wp_color_manager_v1 object. This does not affect any other
         objects in any way.
       </description>
     </request>
   </interface>
 
-  <interface name="zwp_color_management_output_v1" version="1">
+  <interface name="wp_color_management_output_v1" version="1">
     <description summary="output color properties">
-      A zwp_color_management_output_v1 describes the color properties of an
+      A wp_color_management_output_v1 describes the color properties of an
       output.
 
-      When zwp_color_management_output_v1 object is created, it will send
+      When wp_color_management_output_v1 object is created, it will send
       its initial events followed by a wl_output.done event. When creating
       wl_output and its extension objects, use a final wl_display.sync to
       guarantee that all output events have been received across all
       extensions.
 
-      If the wl_output associated with the zwp_color_management_output_v1 is
-      destroyed, the zwp_color_management_output_v1 object becomes inert.
+      If the wl_output associated with the wp_color_management_output_v1 is
+      destroyed, the wp_color_management_output_v1 object becomes inert.
     </description>
 
     <event name="image_description_changed">
@@ -140,41 +140,41 @@
 
     <request name="get_image_description">
       <description summary="get the image description of the output">
-        This creates a new zwp_image_description_v1 object for the current image description
+        This creates a new wp_image_description_v1 object for the current image description
         of the output. There always is exactly one image description active for an
         output so the client should destroy the image description created by earlier
         invocations of this request. This request is usually sent as a reaction
         to the image_description_changed event or when creating a
-        zwp_color_management_output_v1 object.
+        wp_color_management_output_v1 object.
 
-        The created zwp_image_description_v1 object preserves the image_description
+        The created wp_image_description_v1 object preserves the image_description
         of the output from the time the object was created.
 
         The resulting image description object allows get_information request.
 
-        See the zwp_image_description_v1 interface for more details.
+        See the wp_image_description_v1 interface for more details.
       </description>
 
-      <arg name="id" type="new_id" interface="zwp_image_description_v1"/>
+      <arg name="id" type="new_id" interface="wp_image_description_v1"/>
     </request>
 
     <!-- TODO: HDR capabilities event -->
 
     <request name="destroy" type="destructor">
       <description summary="destroy the color management output">
-        Destroy the color zwp_color_management_output_v1 object. This does not
+        Destroy the color wp_color_management_output_v1 object. This does not
         affect any remaining protocol objects.
       </description>
     </request>
   </interface>
 
-  <interface name="zwp_color_management_surface_v1" version="1">
+  <interface name="wp_color_management_surface_v1" version="1">
     <description summary="color management extension to a surface">
-        A zwp_color_management_surface_v1 allows the client to set the color
+        A wp_color_management_surface_v1 allows the client to set the color
         space and HDR properties of a surface.
 
-        If the wl_surface associated with the zwp_color_management_surface_v1 is
-        destroyed, the zwp_color_management_surface_v1 object becomes inert.
+        If the wl_surface associated with the wp_color_management_surface_v1 is
+        destroyed, the wp_color_management_surface_v1 object becomes inert.
     </description>
 
     <enum name="render_intent">
@@ -237,10 +237,10 @@
         those image descriptions the client can listen to the preferred_image_description or
         the wl_surface.enter/leave events. This improvement may require using
         the image description object created by
-        zwp_color_management_output_v1.get_image_description.
+        wp_color_management_output_v1.get_image_description.
       </description>
 
-      <arg name="image_description" type="object" interface="zwp_image_description_v1"/>
+      <arg name="image_description" type="object" interface="wp_image_description_v1"/>
       <arg name="render_intent" type="uint" enum="render_intent" summary="render intent"/>
     </request>
 
@@ -261,10 +261,10 @@
         preferred image description is the one which likely has the most performance
         and quality benefits if used by a client for its surface contents.
 
-        The event does not carry a zwp_image_description_v1 but a wl_output object.
-        The concrete zwp_image_description_v1 can be created by calling
-        zwp_color_management_output_v1.get_image_description on the output and
-        listening to zwp_color_management_output_v1.image_description_changed
+        The event does not carry a wp_image_description_v1 but a wl_output object.
+        The concrete wp_image_description_v1 can be created by calling
+        wp_color_management_output_v1.get_image_description on the output and
+        listening to wp_color_management_output_v1.image_description_changed
         events.
 
         As clients may bind to the same global wl_output multiple
@@ -282,9 +282,9 @@
 
     <request name="destroy" type="destructor">
       <description summary="destroy the color management interface for a surface">
-        Destroy the zwp_color_management_surface_v1 object.
+        Destroy the wp_color_management_surface_v1 object.
 
-        When the last zwp_color_management_surface_v1 object for a wl_surface
+        When the last wp_color_management_surface_v1 object for a wl_surface
         is destroyed, the destruction will pend unsetting the wl_surface's
         image description, render intent and alpha mode similar to set_image_description
         will pend a set.
@@ -292,14 +292,14 @@
     </request>
   </interface>
 
-  <interface name="zwp_image_description_creator_icc_v1" version="1">
+  <interface name="wp_image_description_creator_icc_v1" version="1">
     <description summary="image description creator">
-        A zwp_image_description_creator_v1 object returns a created image_description or the error
+        A wp_image_description_creator_v1 object returns a created image_description or the error
         which occurred during creation.
 
         This image description creator requires an ICC profile to create the object.
 
-        Once a zwp_image_description_creator_v1 object has delivered a 'created' or 'error'
+        Once a wp_image_description_creator_v1 object has delivered a 'created' or 'error'
         event it is automatically destroyed.
     </description>
 
@@ -334,7 +334,7 @@
         The ICC profile version must be 2 or 4, it must be a 3 channel profile
         and the class must be 'input', 'output', 'abstract' or 'display'.
         Violating these requirements will not result in a protocol error but
-        raise the zwp_image_description_creator_v1.error event.
+        raise the wp_image_description_creator_v1.error event.
 
         See the specification from International Color Consortium for more
         details about ICC profiles, also known as ISO 15076-1:2010.
@@ -348,7 +348,7 @@
         Delivers the successfully created image description
       </description>
 
-      <arg name="image_description" type="new_id" interface="zwp_image_description_v1"/>
+      <arg name="image_description" type="new_id" interface="wp_image_description_v1"/>
     </event>
 
     <event name="creation_error">
@@ -360,14 +360,14 @@
     </event>
   </interface>
 
-  <interface name="zwp_image_description_creator_params_v1" version="1">
+  <interface name="wp_image_description_creator_params_v1" version="1">
     <description summary="image description creator">
-        A zwp_image_description_creator_params_v1 object returns a created image_description or the error
+        A wp_image_description_creator_params_v1 object returns a created image_description or the error
         which occurred during creation.
 
         This image description creator requires parameters to be constructed (CICP, Gamma and Color primaries etc)
 
-        Once a zwp_image_description_creator_params_v1 object has delivered a 'created' or 'error'
+        Once a wp_image_description_creator_params_v1 object has delivered a 'created' or 'error'
         event it is automatically destroyed.
     </description>
 
@@ -455,7 +455,7 @@
         be one third of the biggest code value.
 
         For the definition of the SDR maximum white on an output, see
-        extended_dynamic_range on zwp_color_management_output_v1.get_image_description.
+        extended_dynamic_range on wp_color_management_output_v1.get_image_description.
         Content producers are free to choose their SDR maximum white level. How it
         shall be displayed depends on the monitor capabilities and the output
         EDR value.
@@ -481,7 +481,7 @@
         Delivers the successfully created image description
       </description>
 
-      <arg name="image_description" type="new_id" interface="zwp_image_description_v1"/>
+      <arg name="image_description" type="new_id" interface="wp_image_description_v1"/>
     </event>
 
     <event name="error">
@@ -493,33 +493,33 @@
     </event>
   </interface>
 
-  <interface name="zwp_image_description_v1" version="1">
+  <interface name="wp_image_description_v1" version="1">
     <description summary="image description">
       image description that can be attached to a surface
-      (zwp_color_management_surface_v1.set_image_description) and provide
+      (wp_color_management_surface_v1.set_image_description) and provide
       information regarding the type of ICC profile, color primaries,
       cicp primaries, and gamma that are being associated with the surface.
 
       The image description can be attached to a surface
-      (zwp_color_management_surface_v1.set_image_description). It may provide
+      (wp_color_management_surface_v1.set_image_description). It may provide
       information like the ICC profile, gamma, primaries, etc.
 
-      Once created and regardless of how it was created, a zwp_image_description_v1
+      Once created and regardless of how it was created, a wp_image_description_v1
       object always refers to one fixed image description.
 
-      The client can create a zwp_image_description_v1 object with
-      zwp_color_manager_v1 requests or from an output by calling
-      zwp_color_management_output_v1.get_image_description.
+      The client can create a wp_image_description_v1 object with
+      wp_color_manager_v1 requests or from an output by calling
+      wp_color_management_output_v1.get_image_description.
 
-      Other extensions may define more zwp_image_description_v1 factory interfaces.
+      Other extensions may define more wp_image_description_v1 factory interfaces.
       Those interfaces must explicitly specify the interface version for the
-      object created, otherwise versioning zwp_image_description_v1 correctly
+      object created, otherwise versioning wp_image_description_v1 correctly
       becomes impossible. Using a 'new_id' argument without 'interface'
       attribute defined in XML forces code generators to add two explicit
       arguments: interface and version. Version is the explicit version
       number needed, and interface should be required to be
-      "zwp_image_description_v1". The compositor supported zwp_image_description_v1
-      versions are defined by the advertised zwp_color_manager_v1 in
+      "wp_image_description_v1". The compositor supported wp_image_description_v1
+      versions are defined by the advertised wp_color_manager_v1 in
       wl_registry.
     </description>
 
@@ -621,8 +621,8 @@
 
     <request name="destroy" type="destructor">
       <description summary="destroy the image description">
-        Destroy the zwp_image_description_v1 object.
-        Destroying the zwp_image_description_v1 which is active on a surface or an
+        Destroy the wp_image_description_v1 object.
+        Destroying the wp_image_description_v1 which is active on a surface or an
         output does not change the image description of those objects.
       </description>
     </request>
