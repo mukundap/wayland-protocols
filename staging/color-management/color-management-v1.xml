@@ -389,31 +389,66 @@
     </request>
   </interface>
 
-  <interface name="wp_image_description_creator_params_v1" version="1">
-    <description summary="image description creator">
-        A wp_image_description_creator_params_v1 object returns a created image_description or the error
-        which occurred during creation.
+  <interface name="wp_image_description_factory_parametric_v1" version="1">
+    <description summary="parametric image description factory">
+      A global interface advertising the capability of creating image
+      description objects from sets of enumerations and parameters.
 
-        This image description creator requires parameters to be constructed (CICP, Gamma and Color primaries etc)
-
-        Once a wp_image_description_creator_params_v1 object has delivered a 'created' or 'error'
-        event it is automatically destroyed.
+      Clients use this interface when they have a parametric description of
+      of the color properties of their future surface contents and create a
+      wp_image_description_v1 object that can then be set on a wl_surface
+      through wp_color_management_surface_v1.
     </description>
 
-    <enum name="error" bitfield="true">
-      <description summary="image description creation error">
-        Bitmask of errors which occured while trying to create a image description
-      </description>
-
-      <entry name="cicp_gamma" value="0x1" summary="CICP and Gamma TF are set"/>
-      <entry name="cicp_primaries" value="0x4" summary="CICP and custom primaries are set"/>
-    </enum>
-
-    <request name="create">
-      <description summary="Create the image description object using params" >
-        Create a image description object based on params.
+    <request name="destroy" type="destructor">
+      <description summary="destroy factory">
+        Destroys the factory interface object. Destroying does not affect any
+        other protocol objects in any way.
       </description>
     </request>
+
+    <request name="new_creator">
+      <description summary="make a new creator object">
+        Makes a new creator object with all properties unset.
+
+        The client can then use the object's interface to define all the
+        required properties for an image description and finally attempt to
+        create a wp_image_description_v1 object.
+      </description>
+
+      <arg name="obj" type="new_id"
+           interface="wp_image_description_creator_params_v1"
+           summary="the new creator object"/>
+    </request>
+  </interface>
+
+  <interface name="wp_image_description_creator_params_v1" version="1">
+    <description summary="holder of image description parameters">
+      This type of object is used for collecting all the parameters required
+      to create a wp_image_description_v1 object. A complete set of
+      parameters consists of these properties:
+      - transfer characteristic function (tf)
+      - chromaticities of primaries and white point
+      - extended dynamic range
+
+      Each property must be set exactly once if the client is to create an
+      image description. The set requests verify that a property was not
+      already set. The create request verifies that they are all set.
+      There may be several alternative requests for setting each property,
+      and in that case the client must choose one of them.
+
+      Once all properties have been set, the create request can be used to
+      create the image description object. Finally, the params object should
+      be destroyed.
+    </description>
+
+    <enum name="error">
+      <description summary="protocol errors"/>
+
+      <entry name="incomplete_set" value="0" summary="incomplete parameter set"/>
+      <entry name="already_used" value="1" summary="create request already done"/>
+      <entry name="bad_object" value="2" summary="invalid interface or version for new_id"/>
+    </enum>
 
     <request name="set_tf_cicp">
       <description summary="Set the OETF or EOTF^-1" >
@@ -505,21 +540,42 @@
       <arg name="value" type="uint" summary="EDR value * 1000"/>
     </request>
 
-    <event name="created">
-      <description summary="">
-        Delivers the successfully created image description
+    <request name="create">
+      <description summary="Create the image description object using params">
+        Create an image description object based on the parameters previously
+        set on this object.
+
+        The completeness of the parameter set is verified. If the set is not
+        complete, the protocol error incomplete_set is raised. For the
+        definition of a complete set, see the description of this interface.
+
+        If the particular combination of the parameter set is not supported
+        by the compositor, the resulting image description object shall
+        immediately deliver the wp_image_description.failed event with the
+        'unsupported' cause.
+
+        The argument image_description must have the interface
+        "wp_image_description_v1" and a version supported by the compositor.
+        Otherwise the protocol error bad_object is raised.
+        The compositor shall support all versions from 1 up to and including
+        the version number of wp_color_manager_v1 global interface.
+
+        This request can be issued at most once during the lifetime of the
+        wp_image_description_creator_params_v1 object, after which the only
+        legal request is destroy. Otherwise the protocol error already_used
+        is raised.
+
+        A client should destroy this object immediately after this request.
       </description>
 
-      <arg name="image_description" type="new_id" interface="wp_image_description_v1"/>
-    </event>
+      <arg name="image_description" type="new_id" summary="wp_image_description_v1"/>
+    </request>
 
-    <event name="error">
-      <description summary="">
-        This event is sent if the image_description creation failed.
+    <request name="destroy" type="destructor">
+      <description summary="destroy">
+        Destroys this object. No other object is affected.
       </description>
-
-      <arg name="error" type="uint" enum="error" summary="error bitmask"/>
-    </event>
+    </request>
   </interface>
 
   <interface name="wp_image_description_v1" version="1">
