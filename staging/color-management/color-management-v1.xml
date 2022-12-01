@@ -154,13 +154,23 @@
       destroyed, the wp_color_management_output_v1 object becomes inert.
     </description>
 
+    <enum name="error">
+      <description summary="protocol errors"/>
+
+      <entry name="bad_object" value="2" summary="invalid interface or version for new_id"/>
+    </enum>
+
     <event name="image_description_changed">
       <description summary="image description changed">
-        The image_description_changed event is sent whenever the image description of the
+        This event is sent whenever the image description of the
         output changed, followed by one wl_output.done event common to
         output events across all extensions.
 
         This is not an initial event.
+
+        If the client wants to use the updated image description, it needs
+        to do get_image_description again, because image description objects
+        are immutable.
       </description>
     </event>
 
@@ -178,10 +188,20 @@
 
         The resulting image description object allows get_information request.
 
-        See the wp_image_description_v1 interface for more details.
+        The argument image_description must have the interface
+        "wp_image_description_v1" and a version supported by the compositor.
+        Otherwise the protocol error bad_object is raised.
+        The compositor shall support all versions from 1 up to and including
+        the version number of wp_color_manager_v1 global interface.
+
+        If the chosen interface version is inadequate for the output's image
+        description, meaning that the client does not support all the
+        events needed to deliver all the information, the resulting image
+        description object shall immediately deliver the
+        wp_image_description_v1.failed event with the low_version cause.
       </description>
 
-      <arg name="id" type="new_id" interface="wp_image_description_v1"/>
+      <arg name="image_description" type="new_id" summary="wp_image_description_v1"/>
     </request>
 
     <!-- TODO: HDR capabilities event -->
