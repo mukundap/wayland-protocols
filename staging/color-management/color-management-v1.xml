@@ -547,7 +547,46 @@
       "wp_image_description_v1". The compositor supported wp_image_description_v1
       versions are defined by the advertised wp_color_manager_v1 in
       wl_registry.
-    </description>
+
+      Note, that the wp_image_description_v1 object may deliver the 'failed'
+      event as specified in all requests creating it. To ensure that the new
+      image description object is usable, a client should issue a
+      wl_display.sync. If no 'failed' event comes before the sync reply,
+      the object is usable and cannot become "failed".
+  </description>
+
+    <enum name="error">
+      <description summary="protocol errors"/>
+
+      <entry name="failed" value="0" summary="attempted to use failed object"/>
+    </enum>
+
+    <enum name="cause">
+      <description summary="generic reason for failure"/>
+
+      <entry name="low_version" value="0" summary="interface version too low"/>
+      <entry name="unsupported" value="1" summary="unsupported image description data"/>
+    </enum>
+
+    <event name="failed">
+      <description summary="graceful error on creating the image description">
+        If creating a wp_image_description_v1 object fails for a reason that
+        is not defined as a protocol error, this event is sent.
+        The requests that create image description objects define whether
+        and when this can occur. Only such creation requests can trigger this
+        event. This event cannot be triggered after the image description was
+        successfully formed.
+
+        Once this event has been sent, the wp_image_description_v1 object is
+        deemed "failed". A failed object is illegal to use, it can only be
+        destroyed. Any other request in this interface shall result in the
+        'failed' protocol error. Attempts to use a failed object through other
+        interfaces shall raise protocol errors defined there.
+      </description>
+
+      <arg name="cause" type="uint" enum="cause" summary="generic reason"/>
+      <arg name="msg" type="string" summary="ad hoc human-readable explanation"/>
+    </event>
 
     <request name="get_information">
       <description summary="get information about the image description">
