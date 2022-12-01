@@ -223,6 +223,12 @@
         destroyed, the wp_color_management_surface_v1 object becomes inert.
     </description>
 
+    <enum name="error">
+      <description summary="protocol errors"/>
+
+      <entry name="bad_object" value="2" summary="invalid interface or version for new_id"/>
+    </enum>
+
     <enum name="render_intent">
       <description summary="render intent">
         <!-- FIXME: rendering intent is not just a hint -->
@@ -300,31 +306,58 @@
 
     <!-- TODO: HDR metadata request -->
 
-    <event name="preferred_image_description">
-      <description summary="output for color optimization">
-        The preferred_image_description event is sent when the compositor determines
-        or switches the output that implies the preferred image description. The
-        preferred image description is the one which likely has the most performance
-        and quality benefits if used by a client for its surface contents.
+    <event name="preferred_changed">
+      <description summary="compositor's preferred image description for the surface">
+        The preferred image description is the one which likely has the most
+        performance and/or quality benefits for the compositor if used by the
+        client for its wl_surface contents. This event is sent whenever the
+        compositor changes the wl_surface's preferred image description.
 
-        The event does not carry a wp_image_description_v1 but a wl_output object.
-        The concrete wp_image_description_v1 can be created by calling
-        wp_color_management_output_v1.get_image_description on the output and
-        listening to wp_color_management_output_v1.image_description_changed
-        events.
+        This is not an initial event.
 
-        As clients may bind to the same global wl_output multiple
-        times, this event is sent for each bound instance that matches
-        the preferred image description output. If a client has not bound to
-        the right wl_output global at all, this event is not sent.
+        This event is merely a notification. When the client wants to know
+        what the preferred image description is, it shall use the get_preferred
+        request.
 
-        This is only a hint and clients can set any valid image description with
+        The preferred image description is not automatically used for anything.
+        It is only a hint, and clients may set any valid image description with
         set_image_description but there might be performance and color accuracy
-        improvements by providing the surface in the preferred image description.
+        improvements by providing the wl_surface contents in the preferred
+        image description. Therefore clients that can, should render according
+        to the preferred image description
+      </description>
+    </event>
+
+    <request name="get_preferred">
+      <description summary="get the preferred image description">
+        This creates a new wp_image_description_v1 object for the currently
+        preferred image description for the wl_surface. The client should
+        stop using and destroy the image descriptions created by earlier
+        invocations of this request for the associated wl_surface.
+        This request is usually sent as a reaction to the preferred_changed
+        event or when creating a wp_color_management_surface_v1 object if
+        the client is capable of adapting to image descriptions.
+
+        The created wp_image_description_v1 object preserves the preferred image
+        description of the wl_surface from the time the object was created.
+
+        The resulting image description object allows get_information request.
+
+        The argument image_description must have the interface
+        "wp_image_description_v1" and a version supported by the compositor.
+        Otherwise the protocol error bad_object is raised.
+        The compositor shall support all versions from 1 up to and including
+        the version number of wp_color_manager_v1 global interface.
+
+        If the chosen interface version is inadequate for the preferred image
+        description, meaning that the client does not support all the
+        events needed to deliver all the information, the resulting image
+        description object shall immediately deliver the
+        wp_image_description_v1.failed event with the low_version cause.
       </description>
 
-      <arg name="output" type="object" interface="wl_output"/>
-    </event>
+      <arg name="image_description" type="new_id" summary="wp_image_description_v1"/>
+    </request>
 
     <request name="destroy" type="destructor">
       <description summary="destroy the color management interface for a surface">
