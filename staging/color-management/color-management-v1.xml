@@ -700,6 +700,38 @@
       <arg name="msg" type="string" summary="ad hoc human-readable explanation"/>
     </event>
 
+    <event name="identity">
+      <description summary="image description id for de-duplication">
+        This event is sent once when this wp_image_description_v1 protocol
+        object is created, or not at all if the failed event is sent.
+
+        Every wp_image_description_v1 protocol object refers to an underlying
+        image description record in the compositor. Multiple protocol objects
+        may end up referring to the same record. Clients may identify these
+        "copies" by comparing their id numbers: if the numbers from two
+        protocol objects are identical, the protocol objects refer to the same
+        image description. Two different image descriptions cannot have the
+        same id number simultaneously. The id number does not change during the
+        lifetime of the image description record.
+
+        The id number is valid only as long as the protocol object is alive.
+        If all protocol objects referring to the same image description are
+        destroyed, the id number may be recycled for a different image
+        description.
+
+        Image description id number is not a protocol object id. Zero is
+        reserved as an invalid id number. It shall not be possible for a
+        client to refer to an image description by its id number in protocol.
+        The id numbers might not be portable between Wayland connections.
+
+        This event allows clients to de-duplicate image description records
+        and avoid get_information request if they already have the image
+        description information.
+      </description>
+
+      <arg name="identity" type="uint" summary="image description id number"/>
+    </event>
+
     <request name="get_information">
       <description summary="get information about the image description">
         As a reply to this request, the compositor will send all available
