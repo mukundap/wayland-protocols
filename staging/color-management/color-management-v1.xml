@@ -493,6 +493,7 @@
       <entry name="bad_object" value="2" summary="invalid interface or version for new_id"/>
       <entry name="invalid_tf" value="3" summary="invalid transfer characteristic"/>
       <entry name="invalid_primaries" value="4" summary="invalid primaries or white point"/>
+      <entry name="already_set" value="5" summary="property already set"/>
     </enum>
 
     <request name="set_tf_cicp">
@@ -503,6 +504,9 @@
         Only code points advertised with wp_image_description_factory_parametric_v1
         event supported_tf_cicp are allowed. Other values shall raise the
         protocol error invalid_tf.
+
+        If transfer characteristic has already been set on this object, the
+        protocol error already_set is raised.
       </description>
 
       <arg name="tf_code" type="uint" summary="TransferCharacteristics code point"/>
@@ -519,6 +523,9 @@
 
         The curve exponent must be at least 1.0 and at most 10.0. Otherwise
         the protocol error invalid_tf is raised.
+
+        If transfer characteristic has already been set on this object, the
+        protocol error already_set is raised.
       </description>
 
       <arg name="eexp" type="uint" summary="the exponent * 10000"/>
@@ -532,6 +539,9 @@
         Only code points advertised with wp_image_description_factory_parametric_v1
         event supported_primaries_cicp are allowed. Other values shall raise the
         protocol error invalid_primaries.
+
+        If primaries have already been set on this object, the protocol error
+        already_set is raised.
       </description>
 
       <arg name="primaries_code" type="uint" summary="ColourPrimaries code point"/>
@@ -544,6 +554,9 @@
 
         Each coordinate value is multiplied by 10000 to get the argument
         value to carry precision of 4 decimals.
+
+        If primaries have already been set on this object, the protocol error
+        already_set is raised.
       </description>
 
       <arg name="r_x" type="uint" summary="Red x * 10000"/>
@@ -587,6 +600,9 @@
 
         The EDR value is multiplied by 1000 to produce the integer value
         carried by the protocol.
+
+        If extended dynamic range has already been set on this object, the
+        protocol error already_set is raised.
       </description>
 
       <arg name="value" type="uint" summary="EDR value * 1000"/>
