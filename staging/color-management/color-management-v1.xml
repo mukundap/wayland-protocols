@@ -538,9 +538,12 @@
     </request>
 
     <request name="set_primaries">
-      <description summary="Set the color primaries">
-        Indicates the chromaticity coordinates of the source colour primaries in
-        terms of CIE 1931
+      <description summary="primaries as chromaticity coordinates">
+        Sets the color primaries and white point using CIE 1931 xy
+        chromaticity coordinates.
+
+        Each coordinate value is multiplied by 10000 to get the argument
+        value to carry precision of 4 decimals.
       </description>
 
       <arg name="r_x" type="uint" summary="Red x * 10000"/>
