@@ -66,41 +66,6 @@
       wp_image_description_factory_parametric_v1 for example.
     </description>
 
-    <enum name="cicp_color_primaries_id">
-      <description summary="cicp_color_primaries_map">
-        Well known chromaticity names
-
-        ColourPrimaries as defined in Rec ITU-T H.273 Coding-independent code
-        points for video signal type identification.
-      </description>
-
-      <entry name="bt709_6" value="1" summary="ITU-R BT.709-6"/>
-      <entry name="smpte_rp_177" value="1" summary="SMPTE RP 177"/>
-      <entry name="bt1361" value="1" summary="ITU-R BT.1361-0"/>
-      <entry name="bt1361_conventional" value="1" summary="ITU-R BT.1361-0 conventional"/>
-      <entry name="bt1361_extended_colour_gamut" value="1"
-             summary="ITU-R BT.1361-0 extended colour gamut system (historical)"/>
-      <entry name="bt470_6_m" value="4" summary="ITU-R BT.470-6 System M (historical)"/>
-      <entry name="bt470_6_b" value="5" summary="ITU-R BT.470-6 System B (historical)"/>
-      <entry name="bt470_6_g" value="5" summary="ITU-R BT.470-6 System G (historical)"/>
-      <entry name="bt601_7_625" value="5" summary="ITU-R BT.601-7 625"/>
-      <entry name="bt1358_625" value="5" summary="ITU-R BT.1358-0 625 (historical)"/>
-      <entry name="bt1700_625_pal" value="5" summary="ITU-R BT.1700-0 625 PAL"/>
-      <entry name="bt1700_625_secam" value="5" summary="ITU-R BT.1700-0 625 SECAM"/>
-      <entry name="bt601_7_525" value="6" summary="ITU-R BT.601-7 525"/>
-      <entry name="bt1358_1_525" value="6" summary="ITU-R BT.1358-1 525"/>
-      <entry name="bt1358_1_625" value="6" summary="ITU-R BT.1358-1 625 (historical)"/>
-      <entry name="bt1700_0_ntsc" value="6" summary="ITU-R BT.1700-0 NTSC"/>
-      <entry name="smpte_st_170" value="6" summary="SMPTE ST 170"/>
-      <entry name="smpte_st_240" value="7" summary="SMPTE ST 240"/>
-      <entry name="generic_film" value="8" summary="Generic film"/>
-      <entry name="bt2020_2" value="9" summary="ITU-R BT.2020-2"/>
-      <entry name="bt2100_2" value="9" summary="ITU-R BT.2100-2"/>
-      <entry name="smpte_st_428_1" value="10" summary="SMPTE ST 428-1"/>
-      <entry name="smpte_rp_431_2" value="11" summary="SMPTE RP 431-2"/>
-      <entry name="smpte_eg_432_1" value="12" summary="SMPTE EG 432-1"/>
-    </enum>
-
     <enum name="error">
       <entry name="icc_fd" value="0" summary="given ICC fd has bad properties"/>
       <entry name="bad_enum" value="1" summary="bad value given as a well-known name"/>
