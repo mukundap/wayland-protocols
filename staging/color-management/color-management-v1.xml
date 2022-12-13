@@ -416,6 +416,11 @@
       of the color properties of their future surface contents and create a
       wp_image_description_v1 object that can then be set on a wl_surface
       through wp_color_management_surface_v1.
+
+      Recommendation ITU-T H.273
+      "Coding-independent code points for video signal type identification"
+      shall be referred to as simply H.273 here, and it defines the code
+      points (CICP).
     </description>
 
     <request name="destroy" type="destructor">
@@ -438,6 +443,26 @@
            interface="wp_image_description_creator_params_v1"
            summary="the new creator object"/>
     </request>
+
+    <event name="supported_tf_cicp">
+      <description summary="supported transfer characteristic code point">
+        When this object is created, it shall immediately send this event
+        once for each H.273 TransferCharacteristics code point the compositor
+        supports.
+      </description>
+
+      <arg name="tf_code" type="uint" summary="TransferCharacteristics code point"/>
+    </event>
+
+    <event name="supported_primaries_cicp">
+      <description summary="supported primaries code point">
+        When this object is created, it shall immediately send this event
+        once for each H.273 ColourPrimaries code point the compositor
+        supports.
+      </description>
+
+      <arg name="primaries_code" type="uint" summary="ColourPrimaries code point"/>
+    </event>
   </interface>
 
   <interface name="wp_image_description_creator_params_v1" version="1">
@@ -466,26 +491,21 @@
       <entry name="incomplete_set" value="0" summary="incomplete parameter set"/>
       <entry name="already_used" value="1" summary="create request already done"/>
       <entry name="bad_object" value="2" summary="invalid interface or version for new_id"/>
+      <entry name="invalid_tf" value="3" summary="invalid transfer characteristic"/>
+      <entry name="invalid_primaries" value="4" summary="invalid primaries or white point"/>
     </enum>
 
     <request name="set_tf_cicp">
-      <description summary="Set the OETF or EOTF^-1" >
-        Sets the transfer characteristics of the source input
-        as described in Section 8.2 of the ITU-T H.273 spec
+      <description summary="transfer characteristic in H.273 code points" >
+        Sets the transfer characteristic using H.273 TransferCharacteristics
+        code points.
 
-        Either indicates the reference opto-electronic transfer characteristic
-        function of the source picture as a function of a source input linear
-        optical intensity input (Lc) with a nominal real-valued range of 0 to 1 or
-        indicates the inverse of the reference electro-optical transfer
-        characteristic function as a function of an output linear optical
-        intensity (Lo) with a nominal real-valued range of 0 to 1.
-
-        CICP uses 0 to 1 encoding range, which means that:
-                - Floating point reperesentations component in the range of [0.0, 1.0].
-                - Integer representation maps 0 to 0.0 and max value to 1 to 1.0.
+        Only code points advertised with wp_image_description_factory_parametric_v1
+        event supported_tf_cicp are allowed. Other values shall raise the
+        protocol error invalid_tf.
       </description>
 
-      <arg name="cicp_transfer_characteristics" type="uint" enum="cicp_transfer_characteristics_id" summary="Value from ITU-T H.273 Section 8.2"/>
+      <arg name="tf_code" type="uint" summary="TransferCharacteristics code point"/>
     </request>
 
     <request name="set_tf_gamma">
@@ -499,11 +519,16 @@
     </request>
 
     <request name="set_primaries_cicp">
-      <description summary="Set the primaries from CICP ID">
-        Set the primaries using CICP ID (ID, as specified in ITU-T H.273 Table 2).
+      <description summary="primaries in H.273 code points">
+        Sets the color primaries and white point using H.273 ColourPrimaries
+        code points.
+
+        Only code points advertised with wp_image_description_factory_parametric_v1
+        event supported_primaries_cicp are allowed. Other values shall raise the
+        protocol error invalid_primaries.
       </description>
 
-      <arg name="cicp_color_primaries" type="uint" enum="cicp_color_primaries_id" summary="Values from ITU H.273 Section 8.1"/>
+      <arg name="primaries_code" type="uint" summary="ColourPrimaries code point"/>
     </request>
 
     <request name="set_primaries">
