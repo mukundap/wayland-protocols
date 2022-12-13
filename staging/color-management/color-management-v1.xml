@@ -509,13 +509,19 @@
     </request>
 
     <request name="set_tf_gamma">
-      <description summary="Set the Gamma curve">
-        Sets the transfer characteristics as a gamma curve.
+      <description summary="transfer characteristic as a power curve">
+        Sets the transfer characteristic to a power curve with the given
+        exponent. This curve represents the conversion from electrical to
+        optical pixel or color values.
 
-        Use decimal value to define the gamma (e.g. 22 for a 2.2 Gamma, 24 for a 2.4 Gamma, etc)
+        The curve exponent shall be multiplied by 10000 to get the argument
+        eexp value to carry precision of 4 decimals.
+
+        The curve exponent must be at least 1.0 and at most 10.0. Otherwise
+        the protocol error invalid_tf is raised.
       </description>
 
-      <arg name="gamma" type="uint" summary="The gamma type (2.2, 2.4 etc)"/>
+      <arg name="eexp" type="uint" summary="the exponent * 10000"/>
     </request>
 
     <request name="set_primaries_cicp">
