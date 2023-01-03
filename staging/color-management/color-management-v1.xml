@@ -210,32 +210,6 @@
       <entry name="relative_bpc" value="4" summary="media-relative colorimetric + black point compensation"/>
     </enum>
 
-    <enum name="alpha_mode">
-      <description summary="alpha mode">
-        Specifies whether alpha is pre-multiplied into color channels or not.
-        If pre-multiplied, the linear alpha value is already multiplied with the
-        (non-linear) color channel code values in the color channels.
-      </description>
-
-      <entry name="straight" value="0" summary="alpha is independent from color channels"/>
-      <entry name="premultiplied" value="1" summary="alpha is pre-multiplied into color channels"/>
-    </enum>
-
-    <request name="set_alpha_mode">
-      <description summary="set the surface alpha mode">
-        Assuming an alpha channel exists, it is always linear. The alpha mode
-        determines whether the color channels include alpha pre-multiplied or
-        not. Using straight alpha might have performance benefits.
-
-        Alpha mode is double buffered, and will be applied at the time
-        wl_surface.commit of the corresponding wl_surface is called.
-
-        By default, a surface is assumed to have pre-multiplied alpha.
-      </description>
-
-      <arg name="alpha_mode" type="uint" enum="alpha_mode" summary="alpha mode"/>
-    </request>
-
     <request name="set_image_description">
       <description summary="set the surface image description">
         Set the image description of the underlying surface. The image description and
@@ -330,7 +304,7 @@
 
         When the last wp_color_management_surface_v1 object for a wl_surface
         is destroyed, the destruction will pend unsetting the wl_surface's
-        image description, render intent and alpha mode similar to set_image_description
+        image description and render intent similar to set_image_description
         will pend a set.
       </description>
     </request>
