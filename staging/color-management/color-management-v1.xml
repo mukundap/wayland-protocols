@@ -169,8 +169,6 @@
       <arg name="image_description" type="new_id" summary="wp_image_description_v1"/>
     </request>
 
-    <!-- TODO: HDR capabilities event -->
-
     <request name="destroy" type="destructor">
       <description summary="destroy the color management output">
         Destroy the color wp_color_management_output_v1 object. This does not
@@ -242,8 +240,6 @@
         wl_surface.commit of the corresponding wl_surface is called.
       </description>
     </request>
-
-    <!-- TODO: HDR metadata request -->
 
     <event name="preferred_changed">
       <description summary="compositor's preferred image description for the surface">
