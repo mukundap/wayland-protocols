@@ -1,14 +1,12 @@
 project('wayland-protocols',
-	version: '1.20',
-	meson_version: '>= 0.53.0',
+	version: '1.31',
+	meson_version: '>= 0.55.0',
 	license: 'MIT/Expat',
 )
 
 wayland_protocols_version = meson.project_version()
 
 fs = import('fs')
-
-dep_scanner = dependency('wayland-scanner', native: true)
 
 stable_protocols = [
 	'presentation-time',
@@ -37,10 +35,31 @@ unstable_protocols = {
 	'xwayland-keyboard-grab': ['v1'],
 }
 
+staging_protocols = {
+	'content-type': ['v1'],
+	'drm-lease': ['v1'],
+	'ext-idle-notify': ['v1'],
+	'ext-session-lock': ['v1'],
+	'fractional-scale': ['v1'],
+	'single-pixel-buffer': ['v1'],
+	'tearing-control': ['v1'],
+	'xdg-activation': ['v1'],
+	'xwayland-shell': ['v1'],
+	'color-management': ['v1'],
+}
+
 protocol_files = []
 
 foreach name : stable_protocols
 	protocol_files += ['stable/@0@/@0@.xml'.format(name)]
+endforeach
+
+foreach name : staging_protocols.keys()
+	foreach version : staging_protocols.get(name)
+		protocol_files += [
+			'staging/@0@/@0@-@1@.xml'.format(name, version)
+		]
+	endforeach
 endforeach
 
 foreach name : unstable_protocols.keys()
@@ -93,6 +112,14 @@ configure_file(
 	output: 'wayland-protocols-uninstalled.pc',
 	configuration: pkgconfig_configuration,
 )
+
+wayland_protocols = declare_dependency(
+	variables: {
+		'pkgdatadir': wayland_protocols_srcdir,
+	},
+)
+
+meson.override_dependency('wayland-protocols', wayland_protocols)
 
 if get_option('tests')
 	subdir('tests')
